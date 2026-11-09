@@ -1,6 +1,8 @@
 # StarStim sessions used for reconstruction. id = folder prefix in data/lab_sessions (E<nn>_<date>_<code>).
 # kind: stim  = memorability_stim sessions (images shown during a stimulation protocol; only pulse-free blocks are used)
 #       recon = dedicated reconstruction blocks without stimulation (future recordings)
+# rsvp: true marks a session with a rapid-stream block (image codes 3001-3299, 5 images per second, no stimulation),
+#       read by data_sessions.load_rsvp and scripts/run_rsvp_reconstruction.py
 # Add a new recording by putting its folder into the lab_sessions location and adding a line here, then rerun
 #   python scripts/make_infographic.py --recompute
 sessions:
@@ -19,3 +21,4 @@ sessions:
   - {id: E18, kind: stim}
   - {id: E19, kind: stim}
   - {id: E20, kind: stim}
+  - {id: E21, kind: stim, rsvp: true}

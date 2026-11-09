@@ -24,9 +24,12 @@ from matplotlib.patches import FancyBboxPatch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from starstim_recon import reconstruct  # noqa: E402
 from starstim_recon.data_sessions import session_ids  # noqa: E402
-from starstim_recon.images import photo, to8  # noqa: E402
+from starstim_recon.images import enhanced, photo, to8  # noqa: E402
 from starstim_recon.paths import CACHE, RESULTS  # noqa: E402
 
+# the "new lab sessions" panel describes the memorability_stim sessions E06-E20 (its text below says so); later sessions
+# such as E21's rapid-stream block are analysed by their own scripts (scripts/run_rsvp_reconstruction.py)
+STIM_PANEL_SESSIONS = [f"E{n:02d}" for n in range(6, 21)]
 COL = {"things": "#2b6cb0", "old": "#c05621", "new": "#9b2c2c"}
 INFO = {
     "things": ("THINGS-EEG2", "public benchmark",
@@ -69,17 +72,9 @@ def load_data(recompute: bool):
     if cache.exists() and not recompute:
         return torch.load(cache, weights_only=False)
     D = {"things": reconstruct.things(), "old": reconstruct.old_lab(),
-         "new": reconstruct.sessions(session_ids(kind="stim"))}
+         "new": reconstruct.sessions([s for s in session_ids(kind="stim") if s in STIM_PANEL_SESSIONS])}
     CACHE.mkdir(parents=True, exist_ok=True); torch.save(D, cache)
     return D
-
-
-def enhanced(pred8, true8, groups):
-    dp, dt, base = np.zeros_like(pred8), np.zeros_like(true8), np.zeros_like(true8)
-    for g in np.unique(groups):
-        m = groups == g
-        dp[m] = pred8[m] - pred8[m].mean(0); dt[m] = true8[m] - true8[m].mean(0); base[m] = true8[m].mean(0)
-    return np.clip(base + dp * (dt.std() / (dp.std() + 1e-12)), 0, 1)
 
 
 def wrap(text, width):

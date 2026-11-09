@@ -32,6 +32,13 @@ def lab_image_conditions() -> set:
     return set(json.load(open(THINGS_EEG / "lab_stimulus_exclusion.json"))["train_condition_indices"])
 
 
+def train_indices(exclude_basenames=()) -> torch.Tensor:
+    """THINGS training images usable for a fit: without the old-lab stimuli and without any image named in exclude_basenames
+    (e.g. a session's own images, so they never enter the readout that reconstructs them)."""
+    drop = lab_image_conditions() | {i for i, p in enumerate(image_paths("train")) if p.name in set(exclude_basenames)}
+    return torch.tensor([i for i in range(16540) if i not in drop])
+
+
 def image_paths(split: str) -> list:
     rel = torch.load(THINGS_EEG / f"targets_pixel32{'_test' if split == 'test' else ''}.pt", weights_only=False)["relative_paths"]
     return [THINGS / "image_set" / _IMAGE_DIR[split] / r for r in rel]

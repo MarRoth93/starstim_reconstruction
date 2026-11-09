@@ -18,9 +18,14 @@ from .readout import aggregate, fit_primal_ridge, fit_ridge, nested_cv, zca_by_s
 THINGS_ALPHA = 1e-3
 
 
+def things_readout(alpha=THINGS_ALPHA, exclude_basenames=()):
+    """Linear THINGS ridge (31 channels, lab contract) -> predict(torch (n, 31*250)) -> (n, 3*32*32)."""
+    keep = data_things.train_indices(exclude_basenames)
+    return fit_primal_ridge(data_things.eeg_means("train")[keep], data_things.targets("train")[keep].flatten(1), alpha)
+
+
 def things(alpha=THINGS_ALPHA):
-    keep = torch.tensor([i for i in range(16540) if i not in data_things.lab_image_conditions()])
-    predict = fit_primal_ridge(data_things.eeg_means("train")[keep], data_things.targets("train")[keep].flatten(1), alpha)
+    predict = things_readout(alpha)
     true = data_things.targets("test")
     pred = predict(data_things.eeg_means("test")).view(-1, 3, 32, 32)
     vals, _ = coarse8(pred, true, np.arange(len(true)))

@@ -22,10 +22,9 @@ from starstim_recon import data_old_lab, data_things  # noqa: E402
 from starstim_recon.images import pixel32_many  # noqa: E402
 from starstim_recon.metrics import coarse8, paired_bootstrap, score  # noqa: E402
 from starstim_recon.paths import RESULTS  # noqa: E402
-from starstim_recon.readout import ALPHAS, aggregate, dual_ridge_predict, fit_primal_ridge, nested_cv, zca_by_subject  # noqa: E402
+from starstim_recon.readout import aggregate, fit_primal_ridge, nested_cv, nested_prior_cv, zca_by_subject  # noqa: E402
 
 THINGS_ALPHAS = tuple(10.0 ** k for k in range(-7, 3))
-PRIOR_ALPHAS = ALPHAS + (1e7, 1e8, 1e9)
 ZCA_SCALE = 1.1                                     # the THINGS lab-contract cache is ZCA-whitened x1.1
 
 
@@ -41,31 +40,6 @@ def things_readout():
             best = (a, predict)
     print(f"THINGS ridge alpha {best[0]:g}; test-200 coarse8 by alpha {np.round(scores, 4).tolist()}")
     return best[1], best[0], scores
-
-
-def nested_prior_cv(X, img, true32, uniq, f_T, outer_folds=8, inner_folds=4, seed=0):
-    images = np.array(sorted(set(img.tolist()))); perm = np.random.default_rng(seed).permutation(len(images))
-    fold_of = {int(images[perm[i]]): i % outer_folds for i in range(len(images))}; fold = np.array([fold_of[int(t)] for t in img])
-    position = {int(t): i for i, t in enumerate(uniq)}
-    Y = np.stack([true32[position[int(t)]].flatten().numpy() for t in img]).astype(np.float64)
-    F0 = f_T(torch.from_numpy(X).float()).numpy().astype(np.float64)
-    preds, chosen = np.zeros_like(Y), []
-    for k in range(outer_folds):
-        tr, te = np.flatnonzero(fold != k), np.flatnonzero(fold == k)
-        tr_images = np.array(sorted(set(img[tr].tolist())))
-        inner_of = {int(tr_images[i]): i % inner_folds for i in range(len(tr_images))}
-        ifold = np.array([inner_of[int(t)] for t in img[tr]]); scores = []
-        for alpha in PRIOR_ALPHAS:
-            vals = []
-            for j in range(inner_folds):
-                itr, ite = tr[ifold != j], tr[ifold == j]
-                pred = F0[ite] + dual_ridge_predict(X[itr], Y[itr] - F0[itr], X[ite], alpha)
-                loc = np.array([position[int(t)] for t in img[ite]])
-                vals.append(coarse8(torch.from_numpy(pred.reshape(-1, 3, 32, 32)).float(), true32, loc)[0].mean())
-            scores.append(float(np.mean(vals)))
-        alpha = PRIOR_ALPHAS[int(np.argmax(scores))]; chosen.append(alpha)
-        preds[te] = F0[te] + dual_ridge_predict(X[tr], Y[tr] - F0[tr], X[te], alpha)
-    return preds, chosen
 
 
 def main():

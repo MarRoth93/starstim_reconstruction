@@ -44,8 +44,9 @@ def aggregate(eeg: torch.Tensor, targets, subjects, level):
     raise ValueError(level)
 
 
-def nested_cv(X, img, true32, uniq, outer_folds=8, inner_folds=4, seed=0):
-    """Out-of-fold ridge predictions, folds by image; alpha tuned on coarse8 in inner image folds."""
+def nested_cv(X, img, true32, uniq, outer_folds=8, inner_folds=4, seed=0, X_eval=None):
+    """Out-of-fold ridge predictions, folds by image; alpha tuned on coarse8 in inner image folds.
+    X_eval (rows aligned with X): predict these inputs for the held-out rows instead of X (e.g. fewer-repeat averages)."""
     rng = np.random.default_rng(seed)
     images = np.array(sorted(set(img.tolist())))
     perm = rng.permutation(len(images))
@@ -68,8 +69,38 @@ def nested_cv(X, img, true32, uniq, outer_folds=8, inner_folds=4, seed=0):
                 loc = np.array([position[int(t)] for t in img[ite]])
                 vals.append(coarse8(torch.from_numpy(pred.reshape(-1, 3, 32, 32)).float(), true32, loc)[0].mean())
             scores.append(float(np.mean(vals)))
-        preds[te] = dual_ridge_predict(X[tr], Y[tr], X[te], ALPHAS[int(np.argmax(scores))])
+        preds[te] = dual_ridge_predict(X[tr], Y[tr], (X if X_eval is None else X_eval)[te], ALPHAS[int(np.argmax(scores))])
     return preds
+
+
+PRIOR_ALPHAS = ALPHAS + (1e7, 1e8, 1e9)      # large alpha -> the prior readout alone
+
+
+def nested_prior_cv(X, img, true32, uniq, f_T, outer_folds=8, inner_folds=4, seed=0):
+    """nested_cv with shrinkage toward a prior readout f_T: argmin ||Y - Xb||^2 + alpha ||b - b_T||^2, i.e. f_T plus a ridge
+    on the residuals Y - f_T(X). f_T takes and returns torch tensors. -> (out-of-fold predictions, alpha per outer fold)."""
+    images = np.array(sorted(set(img.tolist()))); perm = np.random.default_rng(seed).permutation(len(images))
+    fold_of = {int(images[perm[i]]): i % outer_folds for i in range(len(images))}; fold = np.array([fold_of[int(t)] for t in img])
+    position = {int(t): i for i, t in enumerate(uniq)}
+    Y = np.stack([true32[position[int(t)]].flatten().numpy() for t in img]).astype(np.float64)
+    F0 = f_T(torch.from_numpy(X).float()).numpy().astype(np.float64)
+    preds, chosen = np.zeros_like(Y), []
+    for k in range(outer_folds):
+        tr, te = np.flatnonzero(fold != k), np.flatnonzero(fold == k)
+        tr_images = np.array(sorted(set(img[tr].tolist())))
+        inner_of = {int(tr_images[i]): i % inner_folds for i in range(len(tr_images))}
+        ifold = np.array([inner_of[int(t)] for t in img[tr]]); scores = []
+        for alpha in PRIOR_ALPHAS:
+            vals = []
+            for j in range(inner_folds):
+                itr, ite = tr[ifold != j], tr[ifold == j]
+                pred = F0[ite] + dual_ridge_predict(X[itr], Y[itr] - F0[itr], X[ite], alpha)
+                loc = np.array([position[int(t)] for t in img[ite]])
+                vals.append(coarse8(torch.from_numpy(pred.reshape(-1, 3, 32, 32)).float(), true32, loc)[0].mean())
+            scores.append(float(np.mean(vals)))
+        alpha = PRIOR_ALPHAS[int(np.argmax(scores))]; chosen.append(alpha)
+        preds[te] = F0[te] + dual_ridge_predict(X[tr], Y[tr] - F0[tr], X[te], alpha)
+    return preds, chosen
 
 
 def fit_ridge(X, Y, img, true32, local, seed=0):

@@ -30,6 +30,9 @@ later runs only redraw. Expected numbers (mean coarse8; 0 = chance, 1 = perfect)
 | Old lab, ridge trained on the lab data (8-fold image cross-validation) | 128 | +0.079 |
 | Lab sessions E06-E20, old-lab ridge, pulse-free blocks | 283 | -0.010 |
 
+The infographic's session panel is pinned to E06-E20 (`STIM_PANEL_SESSIONS` in `scripts/make_infographic.py`), so
+registering new sessions does not change it.
+
 ## Add new data
 
 1. Put the session folder (`E<nn>_<date>_<code>/` with `experiment/*.xdf` + PsychoPy files) into the `lab_sessions` location.
@@ -51,6 +54,7 @@ later runs only redraw. Expected numbers (mean coarse8; 0 = chance, 1 = perfect)
 | `scripts/run_transfer_sessions.py` | old-lab ridge -> sessions, per session and pooled (R5) |
 | `scripts/run_global_props.py` | 8 global image properties, per-person readouts (R7) |
 | `scripts/run_things_prior.py` | THINGS ridge as a weight prior for the lab ridge (R6) |
+| `scripts/run_rsvp_reconstruction.py` | reconstruction from a rapid-stream block (E21): THINGS zero-shot, within-person, THINGS prior, old-lab ridge |
 | `scripts/link_data.py`, `scripts/build_old_lab_manifest.py` | data setup |
 
 ## Results so far (2026-11-06)

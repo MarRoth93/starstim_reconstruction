@@ -28,6 +28,16 @@ def photo(path, res=96) -> np.ndarray:
     return np.asarray(img.crop(((w - s) // 2, (h - s) // 2, (w + s) // 2, (h + s) // 2)).resize((res, res)))
 
 
+def enhanced(pred8, true8, groups) -> np.ndarray:
+    """Display only: set mean of the targets + (prediction - set mean of the predictions) x k, one k for all images,
+    matching the spread of the targets (ridge predictions are shrunk toward the mean)."""
+    dp, dt, base = np.zeros_like(pred8), np.zeros_like(true8), np.zeros_like(true8)
+    for g in np.unique(groups):
+        m = groups == g
+        dp[m] = pred8[m] - pred8[m].mean(0); dt[m] = true8[m] - true8[m].mean(0); base[m] = true8[m].mean(0)
+    return np.clip(base + dp * (dt.std() / (dp.std() + 1e-12)), 0, 1)
+
+
 # ------------------------------------------------------------------------------------------------ global properties
 PROPS = ["L", "a", "b", "contrast", "chroma", "sf_slope", "lr_diff", "tb_diff"]
 _CROP128 = transforms.Compose([transforms.Resize(512, interpolation=transforms.InterpolationMode.BICUBIC),
