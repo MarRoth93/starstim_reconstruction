@@ -1,0 +1,16 @@
+# Where the data live on THIS machine. Copy to configs/paths.local.yaml (gitignored), edit, then run
+#   python scripts/link_data.py
+# which creates the symlinks in data/ that all code uses (the code itself only ever sees data/...).
+
+# THINGS dataset root, containing image_set/{training_images,test_images}/ and images_THINGS/object_images/
+things: /path/to/THINGS
+
+# THINGS-EEG2 rebuilt through the StarStim lab contract (31 channels, average reference, per-subject ZCA x1.1, 0-1 s, 250 Hz):
+# sub-XX_starstim31_eeg[_test].pt, lab_stimulus_exclusion.json, targets_pixel32[_test].pt (see data/README.md)
+things_eeg2_labcontract: /path/to/things_labcontract
+
+# old lab recordings (May-June 2026) as 0-1 s epochs: lab_starstim31_epochs_250hz.npz
+old_lab_epochs: /path/to/lab_starstim31_epochs_250hz.npz
+
+# StarStim session folders E<nn>_<date>_<code>, each with experiment/*.xdf and the PsychoPy files
+lab_sessions: /path/to/neurostim

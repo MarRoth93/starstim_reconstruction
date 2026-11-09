@@ -1,0 +1,21 @@
+# StarStim sessions used for reconstruction. id = folder prefix in data/lab_sessions (E<nn>_<date>_<code>).
+# kind: stim  = memorability_stim sessions (images shown during a stimulation protocol; only pulse-free blocks are used)
+#       recon = dedicated reconstruction blocks without stimulation (future recordings)
+# Add a new recording by putting its folder into the lab_sessions location and adding a line here, then rerun
+#   python scripts/make_infographic.py --recompute
+sessions:
+  - {id: E06, kind: stim}
+  - {id: E07, kind: stim}
+  - {id: E08, kind: stim}
+  - {id: E09, kind: stim}
+  - {id: E10, kind: stim}
+  - {id: E11, kind: stim}
+  - {id: E12, kind: stim}
+  - {id: E13, kind: stim}
+  - {id: E14, kind: stim}
+  - {id: E15, kind: stim}
+  - {id: E16, kind: stim}
+  - {id: E17, kind: stim}
+  - {id: E18, kind: stim}
+  - {id: E19, kind: stim}
+  - {id: E20, kind: stim}

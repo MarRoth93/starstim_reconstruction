@@ -1,0 +1,13 @@
+# data are linked in per machine (scripts/link_data.py); never commit them
+data/*
+!data/README.md
+configs/paths.local.yaml
+
+# regenerable outputs
+cache/
+results/
+
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+*.egg-info/

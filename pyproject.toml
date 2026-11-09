@@ -1,0 +1,12 @@
+[project]
+name = "starstim_recon"
+version = "0.1.0"
+description = "Low-level (coarse layout + colour) EEG image reconstruction for StarStim lab recordings"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy", "scipy", "pandas", "torch", "torchvision", "pillow", "matplotlib",
+    "scikit-learn", "mne", "pyxdf", "pyyaml",
+]
+
+[tool.setuptools]
+packages = ["starstim_recon"]
