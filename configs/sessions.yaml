@@ -3,9 +3,11 @@
 #       recon = dedicated reconstruction blocks without stimulation (future recordings)
 # rsvp: true marks a session with a rapid-stream block (image codes 3001-3299, 5 images per second, no stimulation),
 #       read by data_sessions.load_rsvp and scripts/run_rsvp_reconstruction.py
-# rsvp_offset_ms: true image onset minus image marker in the rapid-stream block. The markers arrive after the image and
-#       the delay differs between sessions; estimate it with scripts/check_rsvp_timing.py (best match with the
-#       THINGS-EEG2 responses to the same images) and enter it here. Not yet confirmed with a photodiode.
+# rsvp_offset_ms: true image onset minus image marker in the rapid-stream block, as [ms at the start of the run's EEG
+#       stream, ms per minute] (one number = a constant). In some sessions the EEG time stamps drift against the marker
+#       clock; scripts/check_rsvp_timing.py measures that drift from the stimulation pulses of the same run, adds the
+#       display lag relative to THINGS-EEG2 (about 40 ms) and prints the line to enter here. Not yet confirmed with a
+#       photodiode.
 # Add a new recording by putting its folder into the lab_sessions location and adding a line here, then rerun
 #   python scripts/make_infographic.py --recompute
 sessions:
@@ -24,7 +26,7 @@ sessions:
   - {id: E18, kind: stim}
   - {id: E19, kind: stim}
   - {id: E20, kind: stim}
-  - {id: E21, kind: stim, rsvp: true, rsvp_offset_ms: -280}
+  - {id: E21, kind: stim, rsvp: true, rsvp_offset_ms: [-58.4, -5.08]}
   # E23: its slow-image codes are 1401-1544, outside the 1001-1299 the slow-trial loader reads,
   # so only its rapid-stream block is used
-  - {id: E23, kind: stim, rsvp: true, rsvp_offset_ms: -180}
+  - {id: E23, kind: stim, rsvp: true, rsvp_offset_ms: [-14.2, -3.58]}

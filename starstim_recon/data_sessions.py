@@ -9,8 +9,8 @@ Epochs are placed by sample index on a smoothed LSL clock (linear fit + 5-s runn
 load_rsvp: rapid-stream ("SSVEP") blocks without stimulation (image codes 3001-3299 = image trigger + 2000, 5 images per
 second), in the THINGS lab contract: the 31 StarStim channels shared with THINGS-EEG2, channels flat or bad within the block
 interpolated, average reference, baseline -0.2..0 s, 150 µV rejection, 250 Hz, 0-1 s. Time zero is the image marker plus the
-session's rsvp_offset_ms (configs/sessions.yaml; estimated by scripts/check_rsvp_timing.py), because the rapid-stream
-markers arrive after the image.
+session's rsvp_offset_ms (configs/sessions.yaml; estimated by scripts/check_rsvp_timing.py): in some sessions the EEG time
+stamps drift against the marker clock, so the offset is a line over the recording.
 
 Privacy: the PsychoPy files also hold questionnaire answers; only whitelisted columns are ever read
 (presentation_image_trigger / presentation_image_path and ssvep_image_trigger / ssvep_image_path).
@@ -34,6 +34,7 @@ FS, PRE, POST = 500, 100, 500                                  # -0.2..1.0 s at 
 CUE = {70: "none", 71: "stim", 72: "pulse_only", 73: "blank"}
 REJECT_UV = 150.0
 RSVP_CODES = (3001, 3299)                                      # rapid-stream image codes = image trigger + 2000
+PULSE_EVENT = 7100                                             # stimulation pulse in the controller's stream neurostim_nic
 
 
 def session_ids(kind=None, rsvp=None) -> list:
@@ -42,10 +43,12 @@ def session_ids(kind=None, rsvp=None) -> list:
     return [s["id"] for s in S if (kind is None or s.get("kind") == kind) and (rsvp is None or bool(s.get("rsvp")) == rsvp)]
 
 
-def rsvp_offset_ms(session_id: str) -> float:
-    """True image onset minus image marker in the session's rapid-stream block (configs/sessions.yaml, 0 if not given)."""
+def rsvp_offset_ms(session_id: str) -> tuple:
+    """True image onset minus image marker in the session's rapid-stream block -> (ms at the start of the run's EEG stream,
+    ms per minute). configs/sessions.yaml: [a, b], or one number for a constant offset; (0, 0) if not given."""
     S = yaml.safe_load(open(CONFIGS / "sessions.yaml"))["sessions"]
-    return float(next((s.get("rsvp_offset_ms", 0) for s in S if s["id"] == session_id), 0))
+    v = next((s.get("rsvp_offset_ms", 0) for s in S if s["id"] == session_id), 0)
+    return tuple(float(q) for q in v) if isinstance(v, list) else (float(v), 0.0)
 
 
 def _folder(session_id: str) -> Path:
@@ -139,11 +142,12 @@ def load_session(session_id: str):
 
 def rsvp_runs(session_id: str):
     """Every XDF run of a session with a rapid-stream block -> (run name, x (samples, 31) µV in its own reference, image
-    trigger per image marker, sample index of each image marker, sequence number per image marker; code 220 starts a
-    sequence). Marker timing as recorded: no offset is applied here."""
+    trigger per image marker, sample index of each image marker, sequence number per image marker (code 220 starts a
+    sequence), sample index of each stimulation pulse event of the run). Marker timing as recorded: no offset is applied."""
     ci = [STARSTIM_32.index(c) for c in STARSTIM_31]
     for path in sorted(glob.glob(str(_folder(session_id) / "experiment/*.xdf"))):
-        st, _ = pyxdf.load_xdf(path, select_streams=[{"name": "neurostim_pyexp"}, {"name": "neurostim_pyexp-EEG"}])
+        st, _ = pyxdf.load_xdf(path, select_streams=[{"name": "neurostim_pyexp"}, {"name": "neurostim_pyexp-EEG"},
+                                                     {"name": "neurostim_nic"}])
         S = {s["info"]["name"][0]: s for s in st}
         if "neurostim_pyexp" not in S or "neurostim_pyexp-EEG" not in S:
             continue
@@ -155,19 +159,23 @@ def rsvp_runs(session_id: str):
         x = S["neurostim_pyexp-EEG"]["time_series"].astype(np.float64)[:, ci]; lin = S["neurostim_pyexp-EEG"]["time_stamps"]
         raw = pyxdf.load_xdf(path, select_streams=[{"name": "neurostim_pyexp-EEG"}], dejitter_timestamps=False)[0][0]["time_stamps"]
         clock = lin + median_filter(raw - lin, size=2501, mode="nearest")
-        yield Path(path).stem, x, codes[img] - 2000, np.searchsorted(clock, mts[img]), np.cumsum(codes == 220)[img]
+        nic = S.get("neurostim_nic", {"time_series": [], "time_stamps": []})
+        pulse = [t for v, t in zip(nic["time_series"], nic["time_stamps"]) if int(float(v[0])) == PULSE_EVENT]
+        yield (Path(path).stem, x, codes[img] - 2000, np.searchsorted(clock, mts[img]), np.cumsum(codes == 220)[img],
+               np.searchsorted(clock, pulse))
 
 
 def load_rsvp(session_id: str, require_images=True, offset_ms=None):
     """Rapid-stream block of a session -> dict(tr: trial table (trigger, sequence), ep: (n, 31, 250) tensor in the THINGS
     lab contract, files: trigger -> image, flat, bad, n_all, offset_ms) or None if the session has no such block.
     require_images=False skips the check that every image file exists (for EEG-only analyses when the image disk is offline).
-    offset_ms: time zero relative to the image marker; None = the session's rsvp_offset_ms, 0 = the marker itself."""
+    offset_ms: time zero relative to the image marker, (ms at the start of the run's EEG stream, ms per minute) or one
+    number; None = the session's rsvp_offset_ms, 0 = the marker itself."""
     folder = _folder(session_id)
-    offset_ms = rsvp_offset_ms(session_id) if offset_ms is None else offset_ms
+    a, b = rsvp_offset_ms(session_id) if offset_ms is None else (*(float(v) for v in np.atleast_1d(offset_ms)), 0.0)[:2]
     trs, eps, flat = [], [], set()
-    for run, x, trigger, on, seq in rsvp_runs(session_id):
-        on = on + int(round(offset_ms / 1000 * FS)); ok = (on - PRE >= 0) & (on + POST <= len(x))
+    for run, x, trigger, on, seq, _ in rsvp_runs(session_id):
+        on = on + np.round((a + b * on / FS / 60) / 1000 * FS).astype(int); ok = (on - PRE >= 0) & (on + POST <= len(x))
         block = x[on[ok].min() - PRE:on[ok].max() + POST]
         run_flat = [c for i, c in enumerate(STARSTIM_31) if (np.diff(block[:, i]) == 0).mean() > 0.5]
         ep = np.stack([x[o - PRE:o + POST] for o in on[ok]]).transpose(0, 2, 1)       # (n, 31, 600) µV
@@ -192,4 +200,4 @@ def load_rsvp(session_id: str, require_images=True, offset_ms=None):
     missing = sorted({int(t) for t in tr.trigger if int(t) not in files or not files[int(t)].exists()})
     assert not (require_images and missing), f"{session_id}: rapid-stream images missing for triggers {missing}"
     return dict(tr=tr, ep=torch.from_numpy(np.ascontiguousarray(ep)).float(), files=files, flat=sorted(flat), bad=bad,
-                n_all=n_all, offset_ms=offset_ms)
+                n_all=n_all, offset_ms=[a, b])

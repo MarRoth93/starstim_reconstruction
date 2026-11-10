@@ -5,8 +5,9 @@
 
 Fixed before the first run (2026-11-09). Input: data_sessions.load_rsvp (THINGS lab contract, 31 channels, 0-1 s, 250 Hz),
 ZCA per session (label-free), each image averaged over its kept repeats. Time zero is the image marker plus the session's
-rsvp_offset_ms (configs/sessions.yaml); --offset-ms overrides it (0 = the marker itself, as in the 2026-11-09 runs) and
-tags the output files. Scored per image against the session's own images
+rsvp_offset_ms (configs/sessions.yaml; ms at the start of the run and ms per minute); --offset-ms overrides it with one
+or two numbers (0 = the marker itself, as in the 2026-11-09 runs) and tags the output files.
+Scored per image against the session's own images
 (coarse8, permutation null over image labels, pairwise identification). Readouts:
   things_zeroshot  linear THINGS ridge (alpha 1e-3, the infographic's), the session's images dropped from the THINGS fit
   within_person    ridge on this session only, 8 outer image folds, alpha in 4 inner folds (R1 protocol)
@@ -51,14 +52,14 @@ def image_means(x, trig, uniq, k=None, rng=None):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--session", default="E21"); ap.add_argument("--n-perm", type=int, default=2000)
-    ap.add_argument("--offset-ms", type=float, default=None)
+    ap.add_argument("--offset-ms", type=float, nargs="+", default=None)
     args = ap.parse_args()
     R = load_rsvp(args.session, offset_ms=args.offset_ms)
-    out = RESULTS / (f"rsvp_{args.session}" + ("" if args.offset_ms is None else f"_offset{args.offset_ms:g}"))
+    out = RESULTS / (f"rsvp_{args.session}" + ("" if args.offset_ms is None else "_offset" + "_".join(f"{v:g}" for v in args.offset_ms)))
     tr = R["tr"]; trig = tr.trigger.values.astype(int); uniq = np.array(sorted(set(trig)))
     reps = np.array([np.sum(trig == u) for u in uniq])
     print(f"{args.session} rapid stream: {len(tr)} of {R['n_all']} trials kept, {len(uniq)} images, repeats {reps.min()}-{reps.max()}; "
-          f"flat {R['flat']} bad {R['bad']}; time zero = image marker {R['offset_ms']:+g} ms")
+          f"flat {R['flat']} bad {R['bad']}; time zero = image marker {R['offset_ms'][0]:+g} ms {R['offset_ms'][1]:+g} ms/min")
     names = {R["files"][int(u)].name for u in uniq}
     true32 = pixel32_many([R["files"][int(u)] for u in uniq]); local = np.arange(len(uniq)); groups = np.zeros(len(uniq))
 
