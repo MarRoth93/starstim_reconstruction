@@ -8,7 +8,9 @@ Epochs are placed by sample index on a smoothed LSL clock (linear fit + 5-s runn
 
 load_rsvp: rapid-stream ("SSVEP") blocks without stimulation (image codes 3001-3299 = image trigger + 2000, 5 images per
 second), in the THINGS lab contract: the 31 StarStim channels shared with THINGS-EEG2, channels flat or bad within the block
-interpolated, average reference, baseline -0.2..0 s, 150 µV rejection, 250 Hz, 0-1 s.
+interpolated, average reference, baseline -0.2..0 s, 150 µV rejection, 250 Hz, 0-1 s. Time zero is the image marker plus the
+session's rsvp_offset_ms (configs/sessions.yaml; estimated by scripts/check_rsvp_timing.py), because the rapid-stream
+markers arrive after the image.
 
 Privacy: the PsychoPy files also hold questionnaire answers; only whitelisted columns are ever read
 (presentation_image_trigger / presentation_image_path and ssvep_image_trigger / ssvep_image_path).
@@ -38,6 +40,12 @@ def session_ids(kind=None, rsvp=None) -> list:
     """Session ids from configs/sessions.yaml (optionally only one kind / only sessions with a rapid-stream block)."""
     S = yaml.safe_load(open(CONFIGS / "sessions.yaml"))["sessions"]
     return [s["id"] for s in S if (kind is None or s.get("kind") == kind) and (rsvp is None or bool(s.get("rsvp")) == rsvp)]
+
+
+def rsvp_offset_ms(session_id: str) -> float:
+    """True image onset minus image marker in the session's rapid-stream block (configs/sessions.yaml, 0 if not given)."""
+    S = yaml.safe_load(open(CONFIGS / "sessions.yaml"))["sessions"]
+    return float(next((s.get("rsvp_offset_ms", 0) for s in S if s["id"] == session_id), 0))
 
 
 def _folder(session_id: str) -> Path:
@@ -129,13 +137,12 @@ def load_session(session_id: str):
                 flat=sorted({c for p in parts for c in p[2]}))
 
 
-def load_rsvp(session_id: str):
-    """Rapid-stream block of a session -> dict(tr: trial table (trigger, sequence), ep: (n, 31, 250) tensor in the THINGS
-    lab contract, files: trigger -> image, flat, bad, n_all) or None if the session has no such block."""
-    folder = _folder(session_id)
+def rsvp_runs(session_id: str):
+    """Every XDF run of a session with a rapid-stream block -> (run name, x (samples, 31) µV in its own reference, image
+    trigger per image marker, sample index of each image marker, sequence number per image marker; code 220 starts a
+    sequence). Marker timing as recorded: no offset is applied here."""
     ci = [STARSTIM_32.index(c) for c in STARSTIM_31]
-    trs, eps, flat = [], [], set()
-    for path in sorted(glob.glob(str(folder / "experiment/*.xdf"))):
+    for path in sorted(glob.glob(str(_folder(session_id) / "experiment/*.xdf"))):
         st, _ = pyxdf.load_xdf(path, select_streams=[{"name": "neurostim_pyexp"}, {"name": "neurostim_pyexp-EEG"}])
         S = {s["info"]["name"][0]: s for s in st}
         if "neurostim_pyexp" not in S or "neurostim_pyexp-EEG" not in S:
@@ -148,15 +155,26 @@ def load_rsvp(session_id: str):
         x = S["neurostim_pyexp-EEG"]["time_series"].astype(np.float64)[:, ci]; lin = S["neurostim_pyexp-EEG"]["time_stamps"]
         raw = pyxdf.load_xdf(path, select_streams=[{"name": "neurostim_pyexp-EEG"}], dejitter_timestamps=False)[0][0]["time_stamps"]
         clock = lin + median_filter(raw - lin, size=2501, mode="nearest")
-        on = np.searchsorted(clock, mts[img]); ok = (on - PRE >= 0) & (on + POST <= len(x))
-        seq = np.cumsum(codes == 220)[img]                                          # 220 = sequence start
+        yield Path(path).stem, x, codes[img] - 2000, np.searchsorted(clock, mts[img]), np.cumsum(codes == 220)[img]
+
+
+def load_rsvp(session_id: str, require_images=True, offset_ms=None):
+    """Rapid-stream block of a session -> dict(tr: trial table (trigger, sequence), ep: (n, 31, 250) tensor in the THINGS
+    lab contract, files: trigger -> image, flat, bad, n_all, offset_ms) or None if the session has no such block.
+    require_images=False skips the check that every image file exists (for EEG-only analyses when the image disk is offline).
+    offset_ms: time zero relative to the image marker; None = the session's rsvp_offset_ms, 0 = the marker itself."""
+    folder = _folder(session_id)
+    offset_ms = rsvp_offset_ms(session_id) if offset_ms is None else offset_ms
+    trs, eps, flat = [], [], set()
+    for run, x, trigger, on, seq in rsvp_runs(session_id):
+        on = on + int(round(offset_ms / 1000 * FS)); ok = (on - PRE >= 0) & (on + POST <= len(x))
         block = x[on[ok].min() - PRE:on[ok].max() + POST]
         run_flat = [c for i, c in enumerate(STARSTIM_31) if (np.diff(block[:, i]) == 0).mean() > 0.5]
         ep = np.stack([x[o - PRE:o + POST] for o in on[ok]]).transpose(0, 2, 1)       # (n, 31, 600) µV
         if run_flat:
             ep = _interpolate(ep, run_flat, STARSTIM_31)
         flat |= set(run_flat)
-        trs.append(pd.DataFrame(dict(trigger=codes[img][ok] - 2000, sequence=seq[ok], run=Path(path).stem))); eps.append(ep)
+        trs.append(pd.DataFrame(dict(trigger=trigger[ok], sequence=seq[ok], run=run))); eps.append(ep)
     if not eps:
         return None
     tr = pd.concat(trs, ignore_index=True); ep = np.concatenate(eps)
@@ -172,6 +190,6 @@ def load_rsvp(session_id: str):
     ep = ep[..., 50:300]; ep = ep - ep.mean(1, keepdims=True)                      # 0..1 s, 31 channels
     files = {t - 2000: p for t, p in image_table(folder, "ssvep").items()}
     missing = sorted({int(t) for t in tr.trigger if int(t) not in files or not files[int(t)].exists()})
-    assert not missing, f"{session_id}: rapid-stream images missing for triggers {missing}"
+    assert not (require_images and missing), f"{session_id}: rapid-stream images missing for triggers {missing}"
     return dict(tr=tr, ep=torch.from_numpy(np.ascontiguousarray(ep)).float(), files=files, flat=sorted(flat), bad=bad,
-                n_all=n_all)
+                n_all=n_all, offset_ms=offset_ms)

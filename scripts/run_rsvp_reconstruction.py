@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """Low-level reconstruction from a rapid-stream block (5 images per second, no stimulation), e.g. E21: 144 images x 20.
 
-    python scripts/run_rsvp_reconstruction.py --session E21
+    python scripts/run_rsvp_reconstruction.py --session E21 [--offset-ms 0]
 
 Fixed before the first run (2026-11-09). Input: data_sessions.load_rsvp (THINGS lab contract, 31 channels, 0-1 s, 250 Hz),
-ZCA per session (label-free), each image averaged over its kept repeats. Scored per image against the session's own images
+ZCA per session (label-free), each image averaged over its kept repeats. Time zero is the image marker plus the session's
+rsvp_offset_ms (configs/sessions.yaml); --offset-ms overrides it (0 = the marker itself, as in the 2026-11-09 runs) and
+tags the output files. Scored per image against the session's own images
 (coarse8, permutation null over image labels, pairwise identification). Readouts:
   things_zeroshot  linear THINGS ridge (alpha 1e-3, the infographic's), the session's images dropped from the THINGS fit
   within_person    ridge on this session only, 8 outer image folds, alpha in 4 inner folds (R1 protocol)
   things_prior     within_person shrunk toward the THINGS ridge weights (alpha grid up to 1e9 = THINGS alone)
   old_lab          the old-lab ridge (25 shared channels, image averages), zero-shot
 Repeat curve: test-image averages over k = 2, 5, 10 random repeats (20 draws each; training inputs unchanged).
-Output: results/rsvp_<session>.json and results/rsvp_<session>_examples.png (8 random images, seed 0).
+Output: results/rsvp_<session>[_offset<ms>].json and ..._examples.png (8 random images, seed 0).
 """
 import argparse
 import json
@@ -49,12 +51,14 @@ def image_means(x, trig, uniq, k=None, rng=None):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--session", default="E21"); ap.add_argument("--n-perm", type=int, default=2000)
+    ap.add_argument("--offset-ms", type=float, default=None)
     args = ap.parse_args()
-    R = load_rsvp(args.session)
+    R = load_rsvp(args.session, offset_ms=args.offset_ms)
+    out = RESULTS / (f"rsvp_{args.session}" + ("" if args.offset_ms is None else f"_offset{args.offset_ms:g}"))
     tr = R["tr"]; trig = tr.trigger.values.astype(int); uniq = np.array(sorted(set(trig)))
     reps = np.array([np.sum(trig == u) for u in uniq])
     print(f"{args.session} rapid stream: {len(tr)} of {R['n_all']} trials kept, {len(uniq)} images, repeats {reps.min()}-{reps.max()}; "
-          f"flat {R['flat']} bad {R['bad']}")
+          f"flat {R['flat']} bad {R['bad']}; time zero = image marker {R['offset_ms']:+g} ms")
     names = {R["files"][int(u)].name for u in uniq}
     true32 = pixel32_many([R["files"][int(u)] for u in uniq]); local = np.arange(len(uniq)); groups = np.zeros(len(uniq))
 
@@ -94,8 +98,9 @@ def main():
     print("repeat curve (mean coarse8 over 20 draws):", dose)
 
     RESULTS.mkdir(parents=True, exist_ok=True)
-    (RESULTS / f"rsvp_{args.session}.json").write_text(json.dumps(
-        {"session": args.session, "n_trials": int(len(tr)), "n_images": int(len(uniq)), "repeats": [int(reps.min()), int(reps.max())],
+    Path(f"{out}.json").write_text(json.dumps(
+        {"session": args.session, "offset_ms": R["offset_ms"], "n_trials": int(len(tr)), "n_images": int(len(uniq)),
+         "repeats": [int(reps.min()), int(reps.max())],
          "results": results, "paired_vs_within_person": paired, "things_prior_alpha_per_fold": prior_alphas,
          "repeat_curve": {str(k): v for k, v in dose.items()}}, indent=2))
 
@@ -113,8 +118,8 @@ def main():
             if len(row) == 3:
                 ax.set_title(f"{row[2][j]:+.2f}", fontsize=8, pad=2)
     fig.suptitle(f"{args.session} rapid stream: reconstructions (contrast-enhanced), number = coarse8 of that image", fontsize=11)
-    fig.tight_layout(); fig.savefig(RESULTS / f"rsvp_{args.session}_examples.png", dpi=110)
-    print("wrote", RESULTS / f"rsvp_{args.session}.json")
+    fig.tight_layout(); fig.savefig(f"{out}_examples.png", dpi=110)
+    print("wrote", f"{out}.json")
 
 
 if __name__ == "__main__":

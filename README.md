@@ -38,6 +38,8 @@ registering new sessions does not change it.
 1. Put the session folder (`E<nn>_<date>_<code>/` with `experiment/*.xdf` + PsychoPy files) into the `lab_sessions` location.
 2. Add a line to `configs/sessions.yaml` (`kind: recon` for a dedicated reconstruction block without stimulation).
 3. `python scripts/link_data.py --check`, then rerun the analyses / `python scripts/make_infographic.py --recompute`.
+4. For a session with a rapid-stream block (`rsvp: true`): `python scripts/check_rsvp_timing.py --session E<nn>`, enter
+   the estimate as `rsvp_offset_ms` in `configs/sessions.yaml`, then `python scripts/run_rsvp_reconstruction.py --session E<nn>`.
 
 ## Code
 
@@ -54,8 +56,26 @@ registering new sessions does not change it.
 | `scripts/run_transfer_sessions.py` | old-lab ridge -> sessions, per session and pooled (R5) |
 | `scripts/run_global_props.py` | 8 global image properties, per-person readouts (R7) |
 | `scripts/run_things_prior.py` | THINGS ridge as a weight prior for the lab ridge (R6) |
-| `scripts/run_rsvp_reconstruction.py` | reconstruction from a rapid-stream block (E21): THINGS zero-shot, within-person, THINGS prior, old-lab ridge |
+| `scripts/run_rsvp_reconstruction.py` | reconstruction from a rapid-stream block (E21, E23): THINGS zero-shot, within-person, THINGS prior, old-lab ridge |
+| `scripts/check_rsvp_timing.py` | where the image-specific response sits relative to the image marker of a rapid-stream block |
 | `scripts/link_data.py`, `scripts/build_old_lab_manifest.py` | data setup |
+
+## Rapid-stream sessions (2026-11-10)
+
+E21 and E23 contain a block without stimulation in which 144 images are shown at 5 images per second in shuffled order.
+In both sessions the response to an image starts before its marker: `scripts/check_rsvp_timing.py` finds the best match
+with the THINGS-EEG2 responses to the same images at marker -280 ms (E21) and -180 ms (E23); the same check gives 0 ms
+for a THINGS subject against the others and +20 ms for the old lab. The cause is unknown and the values are not yet
+confirmed with a photodiode. `load_rsvp` cuts the epochs at marker + `rsvp_offset_ms`.
+
+| Session | Images x repeats | Within-person, time zero at the offset | Within-person, time zero at the marker | THINGS zero-shot at the offset |
+|---|---|---|---|---|
+| E21 | 144 x 20 | +0.045 (p .015) | +0.081 (p .001) | -0.021 |
+| E23 | 144 x 10 | +0.001 (p .48) | +0.014 (p .28) | +0.014 (p .26) |
+
+(`python scripts/run_rsvp_reconstruction.py --session E21`, with `--offset-ms 0` for the marker column.) The marker
+column is higher for E21 most likely because the baseline window (-0.2..0 s) then contains the image response, which the baseline
+subtraction copies into every sample. No THINGS or old-lab readout transfers to either session at either timing.
 
 ## Results so far (2026-11-06)
 
