@@ -3,13 +3,18 @@
 #       recon = dedicated reconstruction blocks without stimulation (future recordings)
 # rsvp: true marks a session with a rapid-stream block (image codes 3001-3299, 5 images per second, no stimulation),
 #       read by data_sessions.load_rsvp and scripts/run_rsvp_reconstruction.py
-# rsvp_offset_ms: true image onset minus image marker in the rapid-stream block, as [ms at the start of the run's EEG
-#       stream, ms per minute] (one number = a constant). In some sessions the EEG time stamps drift against the marker
-#       clock; scripts/check_rsvp_timing.py measures that drift from the stimulation pulses of the same run, adds the
-#       display lag relative to THINGS-EEG2 (about 40 ms) and prints the line to enter here. Not yet confirmed with a
-#       photodiode.
+# Timing: in some sessions the EEG time stamps drift against the marker clock. Both loaders correct that automatically
+#       from the stimulation pulses of the session's own recordings (data_sessions.clock_error); nothing is entered here.
+# rsvp_offset_ms (optional, per session): only for a rapid-stream session whose offset the pulses cannot give (no
+#       stimulation in the recording). True image onset minus image marker as [ms at the start of the run's EEG stream,
+#       ms per minute] or one number; it replaces clock error + display lag. scripts/check_rsvp_timing.py says when it
+#       is needed and prints the line.
 # Add a new recording by putting its folder into the lab_sessions location and adding a line here, then rerun
 #   python scripts/make_infographic.py --recompute
+# Image onset on our screen after its marker in the rapid stream, relative to THINGS-EEG2 timing (ms). The pulses cannot
+# measure it; it is the remainder between the clock error and the image-based offset in E21 and E23
+# (scripts/check_rsvp_timing.py). Not yet confirmed with a photodiode.
+rsvp_display_lag_ms: 46
 sessions:
   - {id: E06, kind: stim}
   - {id: E07, kind: stim}
@@ -26,7 +31,7 @@ sessions:
   - {id: E18, kind: stim}
   - {id: E19, kind: stim}
   - {id: E20, kind: stim}
-  - {id: E21, kind: stim, rsvp: true, rsvp_offset_ms: [-58.4, -5.08]}
+  - {id: E21, kind: stim, rsvp: true}
   # E23: its slow-image codes are 1401-1544, outside the 1001-1299 the slow-trial loader reads,
   # so only its rapid-stream block is used
-  - {id: E23, kind: stim, rsvp: true, rsvp_offset_ms: [-14.2, -3.58]}
+  - {id: E23, kind: stim, rsvp: true}

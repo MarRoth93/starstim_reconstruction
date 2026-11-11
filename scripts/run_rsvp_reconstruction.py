@@ -5,8 +5,9 @@
 
 Fixed before the first run (2026-11-09). Input: data_sessions.load_rsvp (THINGS lab contract, 31 channels, 0-1 s, 250 Hz),
 ZCA per session (label-free), each image averaged over its kept repeats. Time zero is the image marker plus the session's
-rsvp_offset_ms (configs/sessions.yaml; ms at the start of the run and ms per minute); --offset-ms overrides it with one
-or two numbers (0 = the marker itself, as in the 2026-11-09 runs) and tags the output files.
+clock error at that time and the display lag (data_sessions.load_rsvp); --offset-ms replaces that with one number or
+with ms at the start of the run and ms per minute (0 = the marker itself, as in the 2026-11-09 runs) and tags the
+output files.
 Scored per image against the session's own images
 (coarse8, permutation null over image labels, pairwise identification). Readouts:
   things_zeroshot  linear THINGS ridge (alpha 1e-3, the infographic's), the session's images dropped from the THINGS fit
@@ -59,7 +60,8 @@ def main():
     tr = R["tr"]; trig = tr.trigger.values.astype(int); uniq = np.array(sorted(set(trig)))
     reps = np.array([np.sum(trig == u) for u in uniq])
     print(f"{args.session} rapid stream: {len(tr)} of {R['n_all']} trials kept, {len(uniq)} images, repeats {reps.min()}-{reps.max()}; "
-          f"flat {R['flat']} bad {R['bad']}; time zero = image marker {R['offset_ms'][0]:+g} ms {R['offset_ms'][1]:+g} ms/min")
+          f"flat {R['flat']} bad {R['bad']}; time zero = image marker {R['offset']['first_ms']:+.0f} ms at the first image, "
+          f"{R['offset']['last_ms']:+.0f} ms at the last ({R['offset']['source']})")
     names = {R["files"][int(u)].name for u in uniq}
     true32 = pixel32_many([R["files"][int(u)] for u in uniq]); local = np.arange(len(uniq)); groups = np.zeros(len(uniq))
 
@@ -100,7 +102,7 @@ def main():
 
     RESULTS.mkdir(parents=True, exist_ok=True)
     Path(f"{out}.json").write_text(json.dumps(
-        {"session": args.session, "offset_ms": R["offset_ms"], "n_trials": int(len(tr)), "n_images": int(len(uniq)),
+        {"session": args.session, "offset": R["offset"], "n_trials": int(len(tr)), "n_images": int(len(uniq)),
          "repeats": [int(reps.min()), int(reps.max())],
          "results": results, "paired_vs_within_person": paired, "things_prior_alpha_per_fold": prior_alphas,
          "repeat_curve": {str(k): v for k, v in dose.items()}}, indent=2))
