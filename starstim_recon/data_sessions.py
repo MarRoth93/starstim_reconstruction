@@ -230,14 +230,16 @@ def rsvp_runs(session_id: str):
                err(mts[img]) * 1000)
 
 
-def load_rsvp(session_id: str, require_images=True, offset_ms=None):
+def load_rsvp(session_id: str, require_images=True, offset_ms=None, bandpass=None):
     """Rapid-stream block of a session -> dict(tr: trial table (trigger, sequence), ep: (n, 31, 250) tensor in the THINGS
     lab contract, files: trigger -> image, flat, bad, n_all, offset) or None if the session has no such block.
     require_images=False skips the check that every image file exists (for EEG-only analyses when the image disk is offline).
     Time zero is the image marker plus an offset. offset_ms None: the session's clock error at that marker (clock_error)
     plus rsvp_display_lag_ms, or the session's rsvp_offset_ms if configs/sessions.yaml has one. A number, or (ms at the
     start of the run's EEG stream, ms per minute), is used as given; 0 = the marker itself.
-    offset: where it came from (clock / config / argument) and its value in ms at the first and the last image."""
+    offset: where it came from (clock / config / argument) and its value in ms at the first and the last image.
+    bandpass: (low, high) in Hz filters the continuous data of each run before the epochs are cut (zero-phase FIR, as
+    memprep's rapid pipeline uses 0.1-30 Hz); None, the default, leaves the data unfiltered."""
     folder = _folder(session_id)
     line = rsvp_offset_ms(session_id) if offset_ms is None else (*(float(v) for v in np.atleast_1d(offset_ms)), 0.0)[:2]
     source = "clock" if line is None else "config" if offset_ms is None else "argument"
@@ -247,6 +249,9 @@ def load_rsvp(session_id: str, require_images=True, offset_ms=None):
         on = on + np.round(off / 1000 * FS).astype(int); ok = (on - PRE >= 0) & (on + POST <= len(x)); offs.append(off[ok])
         block = x[on[ok].min() - PRE:on[ok].max() + POST]
         run_flat = [c for i, c in enumerate(STARSTIM_31) if (np.diff(block[:, i]) == 0).mean() > 0.5]
+        if bandpass is not None:
+            import mne
+            x = mne.filter.filter_data(x.T, FS, bandpass[0], bandpass[1], fir_design="firwin", verbose=False).T
         ep = np.stack([x[o - PRE:o + POST] for o in on[ok]]).transpose(0, 2, 1)       # (n, 31, 600) µV
         if run_flat:
             ep = _interpolate(ep, run_flat, STARSTIM_31)
