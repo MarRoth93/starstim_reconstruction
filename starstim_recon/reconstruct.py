@@ -5,6 +5,8 @@ dict(pred (n,3,32,32), true (n,3,32,32), vals (per-image coarse8), paths (photos
              (old-lab images dropped), test-200 averaged over 80 reps x 10 people; alpha 1e-3 (chosen on test-200, 1 of 10)
   old_lab    the old lab's own ridge (31 channels, ZCA per person), image level, 8-fold image cross-validation
   sessions   the old-lab ridge (25 shared channels, trained on image averages) applied to lab sessions, per session-image
+
+rsvp_pooled: the rapid-stream recordings averaged per image, the input of scripts/run_rsvp_pooled.py and run_rsvp_finetune.py.
 """
 import numpy as np
 import torch
@@ -13,6 +15,7 @@ from . import data_old_lab, data_sessions, data_things
 from .channels import SHARED_25, STARSTIM_31
 from .images import pixel32_many
 from .metrics import coarse8
+from .paths import CACHE
 from .readout import aggregate, fit_primal_ridge, fit_ridge, nested_cv, zca_by_subject
 
 THINGS_ALPHA = 1e-3
@@ -88,3 +91,29 @@ def sessions(ids, trials="pulse_free"):
         v, _ = coarse8(pred, true, np.arange(len(trig)))                           # scored within the session's own images
         P.append(pred); T.append(true); V.append(v); paths += [s["files"][int(u)] for u in trig]; groups += [sid] * len(trig)
     return dict(pred=torch.cat(P), true=torch.cat(T), vals=np.concatenate(V), paths=paths, groups=np.array(groups))
+
+
+def rsvp_pooled(sessions, bandpass=None, recompute=False):
+    """Rapid-stream recordings on one image list: each recording whitened by itself (ZCA, label-free) and averaged per
+    image, then the recordings of every image averaged -> dict(avg (images, 31, 250), names (image file names, sorted),
+    paths, rec_x (recording x image rows, 31, 250), rec_img (image index per row), rec_session, kept (session -> trials)).
+    bandpass as in load_rsvp. Cached in cache/rsvp_pooled_<filter>.pt and rebuilt when the sessions or their timing
+    settings in configs/sessions.yaml differ, or with recompute (needed after any other change to the loader)."""
+    key = dict(sessions=list(sessions), bandpass=bandpass, display_lag_ms=data_sessions.rsvp_display_lag_ms(),
+               offset_ms=[data_sessions.rsvp_offset_ms(s) for s in sessions])
+    path = CACHE / f"rsvp_pooled_{'none' if bandpass is None else '%g-%gHz' % tuple(bandpass)}.pt"
+    if path.exists() and not recompute:
+        Z = torch.load(path, weights_only=False)
+        if Z["key"] == key:
+            return Z
+    rec_x, rec_name, rec_session, kept, paths = [], [], [], {}, {}
+    for s in sessions:
+        R = data_sessions.load_rsvp(s, bandpass=bandpass); trig = R["tr"].trigger.values.astype(int); uniq = sorted(set(trig))
+        x = zca_by_subject(R["ep"], np.array(["session"] * len(trig)))
+        rec_x.append(torch.stack([x[trig == u].mean(0) for u in uniq])); files = [R["files"][int(u)] for u in uniq]
+        paths.update({f.name: f for f in files}); rec_name += [f.name for f in files]; rec_session += [s] * len(uniq); kept[s] = len(trig)
+    names = sorted(paths); rec_x = torch.cat(rec_x); rec_img = np.array([names.index(nm) for nm in rec_name])
+    Z = dict(key=key, avg=torch.stack([rec_x[rec_img == i].mean(0) for i in range(len(names))]), names=names,
+             paths=[paths[nm] for nm in names], rec_x=rec_x, rec_img=rec_img, rec_session=np.array(rec_session), kept=kept)
+    CACHE.mkdir(parents=True, exist_ok=True); torch.save(Z, path)
+    return Z

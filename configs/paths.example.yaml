@@ -14,3 +14,7 @@ old_lab_epochs: /path/to/lab_starstim31_epochs_250hz.npz
 
 # StarStim session folders E<nn>_<date>_<code>, each with experiment/*.xdf and the PsychoPy files
 lab_sessions: /path/to/neurostim
+
+# optional, only for scripts/run_rsvp_finetune.py: checkpoint of the THINGS-pretrained pixel network
+# (models/things_lowlevel/arm_pixel_labcontract_10sub/best.pt in Hierarchical_EEG2Image_Reconstruction, see data/README.md)
+things_pixel_network: /path/to/arm_pixel_labcontract_10sub/best.pt

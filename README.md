@@ -7,13 +7,14 @@ recordings with a StarStim 32 cap, benchmarked against THINGS-EEG2.
 
 ```bash
 # Python 3.10+ with the packages in pyproject.toml (pip install -e .)
-cp configs/paths.example.yaml configs/paths.local.yaml   # set the four data locations on your machine
+cp configs/paths.example.yaml configs/paths.local.yaml   # set the four data locations on your machine (a fifth is optional)
 python scripts/link_data.py                              # creates the symlinks in data/ and checks the layout
 ```
 
 All code reads data only through `data/` (see `data/README.md` for the expected content and its provenance), so the
 repository works on any machine that has the THINGS images, the THINGS-EEG2 lab-contract cache, the old lab epochs and
-the session folders.
+the session folders. Only `scripts/run_rsvp_finetune.py` needs a fifth, optional one: the checkpoint of the THINGS-pretrained
+pixel network (`things_pixel_network`); `scripts/link_data.py --check` reports it when it is not linked and does not fail.
 
 ## Reproduce the infographic
 
@@ -51,7 +52,8 @@ registering new sessions does not change it.
 | `starstim_recon/metrics.py` | coarse8, pairwise identification, permutation nulls, paired bootstrap |
 | `starstim_recon/readout.py` | per-person ZCA, kernel and primal ridge, nested image-fold cross-validation |
 | `starstim_recon/data_things.py`, `data_old_lab.py`, `data_sessions.py` | the three data sources |
-| `starstim_recon/reconstruct.py` | the three reconstructions shown in the infographic |
+| `starstim_recon/reconstruct.py` | the three reconstructions shown in the infographic; `rsvp_pooled`, the rapid-stream recordings averaged per image |
+| `starstim_recon/things_network.py` | the THINGS-pretrained pixel network (model code copied from `Hierarchical_EEG2Image_Reconstruction`) and the images it was trained on |
 | `scripts/make_infographic.py` | the infographic |
 | `scripts/run_transfer_sessions.py` | old-lab ridge -> sessions, per session and pooled (R5) |
 | `scripts/run_global_props.py` | 8 global image properties, per-person readouts (R7) |
@@ -59,6 +61,7 @@ registering new sessions does not change it.
 | `scripts/run_rsvp_reconstruction.py` | reconstruction from a rapid-stream block (E21, E23): THINGS zero-shot, within-person, THINGS prior, old-lab ridge |
 | `scripts/check_rsvp_timing.py` | checks the automatic timing correction of a rapid-stream block against an estimate from the images |
 | `scripts/run_rsvp_pooled.py` | one decoder on all usable rapid-stream recordings, averaged per image; with and without the band-pass and the posterior channels |
+| `scripts/run_rsvp_finetune.py` | the THINGS-pretrained pixel network on the same pooled recordings: as it is, linear probes, fine-tuning; every score also split by the network's pretraining set |
 | `scripts/make_results_infographic.py` | infographic of the current rapid-stream results and the timing correction, drawn from the result files |
 | `scripts/link_data.py`, `scripts/build_old_lab_manifest.py` | data setup |
 
@@ -125,7 +128,10 @@ then contains the image response, which the baseline subtraction copies into eve
 The usable recordings (`data_sessions.rsvp_usable`: E21, E23, E24, E25, E27, E28, E29; 5 people, 11,846 kept trials)
 show only 262 distinct images: two fixed sets of 144 with 26 in common. `scripts/run_rsvp_pooled.py` whitens each
 recording, averages the recordings of every image and scores one decoder over the 262 images (design fixed before the
-first run). coarse8 over all images, without -> with the 0.1-30 Hz band-pass on the continuous data
+first run). The averaged recordings come from `reconstruct.rsvp_pooled` and are cached in `cache/rsvp_pooled_<filter>.pt`;
+the cache is rebuilt when the usable sessions or the timing settings in `configs/sessions.yaml` change, and with
+`--recompute`, which any other change to the loader needs. coarse8 over all images, without -> with the 0.1-30 Hz
+band-pass on the continuous data
 (`load_rsvp(..., bandpass=(0.1, 30))`, off by default):
 
 | Channels | Own decoder | THINGS zero-shot | THINGS prior |
@@ -140,6 +146,41 @@ zero-shot) and +0.019 (THINGS prior). Averaging the recordings is the main gain;
 gives none (+0.020, one-off test). The band-pass alone, per recording, raises the THINGS readouts (zero-shot +0.013 ->
 +0.027 on five recordings) and lowers the own decoder (+0.039 -> +0.029). New recordings add repeats, not images: more
 distinct images are what the decoder lacks.
+
+## The THINGS-pretrained network on the pooled recordings (2026-11-12)
+
+`scripts/run_rsvp_finetune.py` puts the pixel network of R3 / R4 (`starstim_recon/things_network.py`, checkpoint
+`data/things_pixel_network/best.pt`) on the same averaged recordings (31 channels) and the same 8 image folds. Variants
+and regime were fixed before the first run (MSE, AdamW, 40 epochs, batch 32, last epoch, learning rates 1e-3 adapter,
+1e-4 temporal layer, 1e-5 all other layers); the five seeds and the split by pretraining set were added after it.
+coarse8, without -> with the 0.1-30 Hz band-pass:
+
+| Readout | All 262 images | 173 images the network was pretrained on | 80 images it never saw |
+|---|---|---|---|
+| Own decoder (reference) | +0.041 -> +0.049 | +0.043 -> +0.052 | +0.048 -> +0.057 |
+| THINGS prior, linear (reference) | +0.040 -> +0.061 | +0.046 -> +0.070 | +0.028 -> +0.053 |
+| Network as it is | +0.014 -> +0.028 | +0.022 -> +0.038 | +0.004 -> +0.011 |
+| Ridge on its hidden features | -0.017 -> -0.017 | -0.028 -> -0.031 | +0.007 -> +0.025 |
+| Ridge on its temporal features | +0.058 -> +0.067 | +0.085 -> +0.072 | +0.008 -> +0.068 |
+| Fine-tuned: adapter slot | +0.016 -> +0.030 | +0.021 -> +0.030 | +0.009 -> +0.025 |
+| Fine-tuned: + temporal layer | +0.041 -> +0.047 | +0.039 -> +0.061 | +0.063 -> +0.027 |
+| Fine-tuned: + all other layers, 5 seeds averaged | +0.056 -> +0.079 | +0.054 -> +0.091 | +0.079 -> +0.061 |
+| Fine-tuned: all layers, one row per recording x image | +0.036 -> +0.049 | +0.042 -> +0.069 | +0.040 -> +0.029 |
+
+Fine-tuning all layers gives the highest score on the pooled recordings (+0.079 with the filter, p .0005; single seeds
++0.076 to +0.084, without the filter +0.055 to +0.058). It is not reliably better than the own decoder (+0.030, 95%
+interval -0.016 to +0.075) or the linear THINGS prior (+0.019, -0.024 to +0.061).
+
+**Leakage.** The network was pretrained on 15,626 THINGS-EEG2 training images with their pixel targets; only the 92
+old-lab images were left out. 173 of the 262 rapid-stream images were therefore in its training set and 9 in its
+validation split, so it had already been trained to reconstruct them from other people's EEG. The linear THINGS readouts do
+not have this, they are fitted without any image shown in the lab. On the 80 images the network never saw (candidates =
+these 80), the fine-tuned network scores +0.079 (p .015) without and +0.061 (p .053) with the filter. With the filter
+that is level with the own decoder (+0.057) and the linear prior (+0.053) on the same images, and its gain over the own
+decoder sits on the pretraining images (+0.039 there, +0.004 on the never-seen ones); without the filter it is the other
+way round (+0.011 and +0.031). On 80 images these differences have 95% intervals of about +-0.08, so the split neither
+shows nor excludes an inflated score. The never-seen column is the one free of leakage. A clean score on all images needs
+the network pretrained again without the 262 lab images; that has not been done.
 
 | Step | Question | Result |
 |---|---|---|

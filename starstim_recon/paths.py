@@ -12,6 +12,7 @@ THINGS = DATA / "things"                          # THINGS dataset root: image_s
 THINGS_EEG = DATA / "things_eeg2_labcontract"     # THINGS-EEG2 through the StarStim lab contract: sub-XX_starstim31_eeg[_test].pt, ...
 OLD_LAB_EPOCHS = DATA / "old_lab" / "lab_starstim31_epochs_250hz.npz"   # May-June 2026 StarStim recordings, 0-1 s epochs
 LAB_SESSIONS = DATA / "lab_sessions"              # StarStim session folders E<nn>_<date>_<code> (XDF + PsychoPy files)
+THINGS_PIXEL_NETWORK = DATA / "things_pixel_network" / "best.pt"        # optional: THINGS-pretrained pixel network (things_network.py)
 
 THINGS_OBJECT_IMAGES = THINGS / "images_THINGS" / "object_images"
 THINGS_TEST_IMAGES = THINGS / "image_set" / "test_images"

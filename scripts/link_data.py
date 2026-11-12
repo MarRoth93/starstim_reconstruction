@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Create the symlinks in data/ from configs/paths.local.yaml (absolute paths on this machine), then check the layout.
 
-    cp configs/paths.example.yaml configs/paths.local.yaml   # edit the four paths
+    cp configs/paths.example.yaml configs/paths.local.yaml   # edit the four paths (things_pixel_network is optional)
     python scripts/link_data.py                              # link + check
     python scripts/link_data.py --check                      # check only
 """
@@ -14,10 +14,10 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from starstim_recon.data_sessions import session_ids  # noqa: E402
-from starstim_recon.paths import CONFIGS, LAB_SESSIONS, OLD_LAB_EPOCHS, THINGS, THINGS_EEG  # noqa: E402
+from starstim_recon.paths import CONFIGS, LAB_SESSIONS, OLD_LAB_EPOCHS, THINGS, THINGS_EEG, THINGS_PIXEL_NETWORK  # noqa: E402
 
 LINKS = {"things": THINGS, "things_eeg2_labcontract": THINGS_EEG, "old_lab_epochs": OLD_LAB_EPOCHS,
-         "lab_sessions": LAB_SESSIONS}
+         "lab_sessions": LAB_SESSIONS, "things_pixel_network": THINGS_PIXEL_NETWORK}
 
 
 def link():
@@ -56,6 +56,8 @@ def check():
         hits = list(LAB_SESSIONS.glob(f"{sid}_*"))
         if len(hits) != 1:
             ok = False; print(f"MISSING session {sid}: {len(hits)} folders match {LAB_SESSIONS}/{sid}_*")
+    if not THINGS_PIXEL_NETWORK.exists():                         # only scripts/run_rsvp_finetune.py reads it
+        print(f"optional, not linked: THINGS pixel network ({THINGS_PIXEL_NETWORK})")
     print("data layout OK" if ok else "data layout incomplete (see above)")
     return ok
 

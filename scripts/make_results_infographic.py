@@ -7,7 +7,8 @@ Draws only from result files, so run for every rapid-stream session of configs/s
     python scripts/check_rsvp_timing.py --session E<nn>
     python scripts/run_rsvp_reconstruction.py --session E<nn>                 # corrected timing
     python scripts/run_rsvp_reconstruction.py --session E<nn> --offset-ms 0   # time zero at the marker
-python scripts/run_rsvp_pooled.py for the decoders on all usable recordings together (results/rsvp_pooled.json), and
+python scripts/run_rsvp_pooled.py for the decoders on all usable recordings together (results/rsvp_pooled.json),
+python scripts/run_rsvp_finetune.py for the fine-tuned THINGS network on the same recordings (results/rsvp_finetune.json), and
 python scripts/make_infographic.py for the three reference numbers (results/infographic_numbers.json).
 A session counts as usable when its timing check found an image-based estimate above its null and the automatic offset fits.
 Examples: 8 images of the usable session with the highest scores, drawn at random (seed 0), contrast-enhanced for display.
@@ -30,8 +31,9 @@ from starstim_recon.images import enhanced, photo, pixel32_many, to8  # noqa: E4
 from starstim_recon.paths import CACHE, RESULTS, THINGS_OBJECT_IMAGES  # noqa: E402
 
 INK, INK2, MUTED, GRID, AXIS, SURFACE = "#0b0b0b", "#52514e", "#898781", "#e1e0d9", "#c3c2b7", "#fcfcfb"
-OWN, THINGS, PRIOR = "#2a78d6", "#eb6834", "#1baf7a"             # the readouts keep these colours in every panel
-OLD_H, NEW_H, SPLIT, EXTRA = 21.0, 24.0, 0.60, 3.0               # a 3-inch band for the pooled panel, inserted at SPLIT
+OWN, THINGS, PRIOR, NET = "#2a78d6", "#eb6834", "#1baf7a", "#eda100"   # the readouts keep these colours in every panel
+OLD_H, SPLIT, EXTRA, FOOT = 21.0, 0.60, 4.2, 0.55                # inches added to the 21-inch layout: a band for the pooled
+NEW_H = OLD_H + EXTRA + FOOT                                     # panel, inserted at SPLIT, and taller text boxes at the foot
 POOLED = {"own_decoder": ("Own decoder", OWN, "within_person"), "things_zeroshot": ("THINGS decoder", THINGS, "things_zeroshot"),
           "things_prior": ("THINGS as prior", PRIOR, "things_prior")}   # readout of run_rsvp_pooled -> label, colour, per-recording key
 READOUT = {"within_person": ("Own decoder (trained on the same recording)", OWN),
@@ -43,8 +45,8 @@ def wrap(text, width):
 
 
 def fy(y):
-    """Height in the 21-inch layout the panels were placed in -> height in the figure with the band inserted."""
-    return (y * OLD_H + (EXTRA if y >= SPLIT else 0)) / NEW_H
+    """Height in the 21-inch layout the panels were placed in -> height in the figure with the band and the foot inserted."""
+    return (y * OLD_H + FOOT + (EXTRA if y >= SPLIT else 0)) / NEW_H
 
 
 def R(rect):
@@ -90,6 +92,11 @@ def main():
     assert pooled["sessions"] == usable, f"results/rsvp_pooled.json covers {pooled['sessions']}, usable are {usable}: rerun it"
     pool = lambda f, c, r: pooled["results"][f][c][r]["all"]   # noqa: E731
     best_pool = pool("0.1-30 Hz", "31 channels", "things_prior")["coarse8"]
+    assert (RESULTS / "rsvp_finetune.json").exists(), "run scripts/run_rsvp_finetune.py first"
+    tuned = json.loads((RESULTS / "rsvp_finetune.json").read_text())
+    assert tuned["sessions"] == usable, f"results/rsvp_finetune.json covers {tuned['sessions']}, usable are {usable}: rerun it"
+    net = lambda f, subset="all", r="ft_full_ensemble": tuned["results"][f][r][subset]["coarse8"]   # noqa: E731
+    best_net = net("0.1-30 Hz"); n_pre, n_new = tuned["image_subsets"]["pretraining_images"], tuned["image_subsets"]["never_seen"]
     mean = {r: float(np.mean([score(S[i], r)[0] for i in usable])) for r in READOUT}
     n_sig = {r: sum(score(S[i], r)[1] < 0.05 for i in usable) for r in READOUT}
     drift = {}
@@ -103,6 +110,10 @@ def main():
                                 **{f"{r}_at_marker": score(S[i], r, "marker")[0] for r in READOUT}} for i in ids},
                "mean_usable": mean, "n_significant_usable": n_sig, "usable": usable, "drifting": drifting, "reference": ref}
     numbers["pooled"] = {f: {c: {r: pool(f, c, r)["coarse8"] for r in POOLED} for c in v} for f, v in pooled["results"].items()}
+    numbers["pooled_finetuned_network"] = {f: {subset: {r: net(f, subset, r) for r in ("ft_full_ensemble", "ridge_own", "things_prior")}
+                                               for subset in tuned["image_subsets"]} for f in tuned["results"]}
+    numbers["pooled_finetuned_network"].update(image_subsets=tuned["image_subsets"], seeds=tuned["seeds"],
+                                               minus_things_prior=tuned["ft_full_ensemble_vs"]["0.1-30 Hz"]["things_prior"])
     print(json.dumps(numbers["mean_usable"]), "usable", usable, "drifting", drifting)
 
     fig = plt.figure(figsize=(15, NEW_H), facecolor="white")
@@ -158,35 +169,53 @@ def main():
     rows = [("THINGS-EEG2", ref["things"]["coarse8"], INK2), ("Old lab", ref["old"]["coarse8"], INK2),
             ("Rapid stream,\nown decoder", mean["within_person"], OWN), ("Rapid stream,\nTHINGS decoder", mean["things_zeroshot"], THINGS),
             ("All recordings together,\nTHINGS as prior, filtered", best_pool, PRIOR),
+            ("All recordings together,\nfine-tuned network, filtered *", best_net, NET),
             ("Slow trials E06-E20,\nold-lab decoder", ref["new"]["coarse8"], INK2)]
     for k, (label, v, col) in enumerate(rows):
         y = len(rows) - 1 - k; ax.barh(y, v, 0.34, color=col, zorder=3)
         ax.text(max(v, 0) + 0.012, y, f"{v:+.3f}", va="center", fontsize=10, color=INK)
     ax.set_yticks(range(len(rows))); ax.set_yticklabels([r[0] for r in rows][::-1], fontsize=9, color=INK2)
     ax.axvline(0, color=AXIS, lw=1); ax.set_xlim(-0.03, 0.56); ax.xaxis.grid(True, color=GRID, lw=1); ax.spines["left"].set_visible(False)
+    ax.text(-0.5, -0.23, f"* pretrained on {n_pre} of these {pooled['n_images']} images;\n   on the {n_new} it never saw: "
+            f"{net('0.1-30 Hz', 'never_seen'):+.3f}", transform=ax.transAxes, fontsize=9.5, color=MUTED, va="center")
 
     # ---------------------------------------------------------------------------------------------- all recordings together
     single = {r: float(np.mean([score(S[i], POOLED[r][2])[0] for i in usable])) for r in POOLED}
+    labels = [v[0] for v in POOLED.values()] + ["Fine-tuned network"]; n_rows = len(labels)   # the network: 31 channels only
+    net_note = (f"Fine-tuned network: the pixel network pretrained on THINGS-EEG2, all layers fine-tuned on our images, mean of "
+                f"{len(tuned['seeds'])} seeds; it has no single-recording value. It was pretrained on {n_pre} of the {pooled['n_images']} "
+                f"images, so its score is not free of leakage: on the {n_new} images it never saw it scores {net('none', 'never_seen'):+.3f} "
+                f"without and {net('0.1-30 Hz', 'never_seen'):+.3f} with the band-pass (own decoder on these: "
+                f"{net('none', 'never_seen', 'ridge_own'):+.3f} and {net('0.1-30 Hz', 'never_seen', 'ridge_own'):+.3f}).")
     for k, cname in enumerate(("31 channels", "10 posterior")):
-        ax = panel(fig, [0.21 + k * 0.33, 0.552, 0.27, 0.064],
+        ax = panel(fig, [0.21 + k * 0.33, (SPLIT * OLD_H + FOOT + 1.35) / NEW_H, 0.27, 2.05 / NEW_H],
                    f"All {len(usable)} usable recordings together: averaged per image, one decoder on {pooled['n_images']} images" if k == 0 else " ",
                    "31 channels" if k == 0 else "10 posterior channels")
         for j, (r, (label, col, _)) in enumerate(POOLED.items()):
-            y = len(POOLED) - 1 - j; a, b = pool("none", cname, r)["coarse8"], pool("0.1-30 Hz", cname, r)["coarse8"]
+            y = n_rows - 1 - j; a, b = pool("none", cname, r)["coarse8"], pool("0.1-30 Hz", cname, r)["coarse8"]
             ax.plot([a, b], [y, y], color=AXIS, lw=2, zorder=2, solid_capstyle="round")
             ax.plot(single[r], y, "|", ms=13, mew=2, color=MUTED, zorder=3)
             ax.plot(a, y, "o", ms=8, color=SURFACE, mec=MUTED, mew=1.5, zorder=3)
             ax.plot(b, y, "o", ms=9, color=col, mec=SURFACE, mew=2, zorder=4)
             ax.text(max(a, b) + 0.004, y, f"{b:+.3f}", va="center", fontsize=9.5, color=INK)
-        ax.axvline(0, color=AXIS, lw=1, zorder=1); ax.set_xlim(-0.005, 0.085); ax.set_ylim(-0.6, len(POOLED) - 0.4)
-        ax.set_yticks(range(len(POOLED))); ax.set_yticklabels([v[0] for v in POOLED.values()][::-1] if k == 0 else [], fontsize=10, color=INK2)
-        ax.xaxis.grid(True, color=GRID, lw=1); ax.spines["left"].set_visible(False); ax.set_xticks([0, 0.02, 0.04, 0.06, 0.08])
+        if k == 0:
+            a, b = net("none"), net("0.1-30 Hz")
+            ax.plot([a, b], [0, 0], color=AXIS, lw=2, zorder=2, solid_capstyle="round")
+            ax.plot(a, 0, "o", ms=8, color=SURFACE, mec=MUTED, mew=1.5, zorder=3)
+            ax.plot(b, 0, "o", ms=9, color=NET, mec=SURFACE, mew=2, zorder=4)
+            ax.text(max(a, b) + 0.004, 0, f"{b:+.3f}", va="center", fontsize=9.5, color=INK)
+        else:
+            ax.text(0.003, 0, "Fine-tuned network: not run on the posterior channels", va="center", fontsize=9.5, color=MUTED)
+        ax.axvline(0, color=AXIS, lw=1, zorder=1); ax.set_xlim(-0.005, 0.105); ax.set_ylim(-0.6, n_rows - 0.4)
+        ax.set_yticks(range(n_rows)); ax.set_yticklabels(labels[::-1] if k == 0 else [], fontsize=10, color=INK2)
+        ax.xaxis.grid(True, color=GRID, lw=1); ax.spines["left"].set_visible(False); ax.set_xticks([0, 0.02, 0.04, 0.06, 0.08, 0.10])
         if k == 0:
             ax.plot([], [], "|", ms=13, mew=2, color=MUTED, label="mean of the single recordings")
             ax.plot([], [], "o", ms=8, color=SURFACE, mec=MUTED, mew=1.5, label="all together, no filter")
             ax.plot([], [], "o", ms=9, color=INK2, mec=SURFACE, mew=2, label="all together, 0.1-30 Hz band-pass")
-            ax.legend(loc="upper left", bbox_to_anchor=(-0.02, -0.22), fontsize=9.5, frameon=False, ncol=3, handletextpad=0.3,
+            ax.legend(loc="upper left", bbox_to_anchor=(-0.02, -0.165), fontsize=9.5, frameon=False, ncol=3, handletextpad=0.3,
                       columnspacing=1.4, labelcolor=INK2)
+            ax.text(0, -0.36, wrap(net_note, 128), transform=ax.transAxes, fontsize=9.5, color=MUTED, va="top")
 
     # ---------------------------------------------------------------------------------------------- the clock
     big = [i for i in drifting if np.abs(drift[i][1]).max() > 500]
@@ -266,24 +295,31 @@ def main():
     # ---------------------------------------------------------------------------------------------- what it means
     best_things = max(usable, key=lambda i: score(S[i], "things_zeroshot")[0])
     new = [f"{len(ids)} rapid-stream recordings from {len({S[i]['person'] for i in ids})} people; {len(usable)} are usable, with "
-           f"{pooled['n_images']} distinct images. Averaged per image and decoded together they reach {best_pool:+.3f}.",
+           f"{pooled['n_images']} distinct images. Averaged per image and decoded together they reach {best_pool:+.3f} with a linear "
+           f"readout and {best_net:+.3f} with a THINGS-pretrained network fine-tuned on them.",
            f"The EEG clock runs off the marker clock in {len(drifting)} of {len(drifting) + len(steady)} sessions. Both loaders now "
            "measure this from the stimulation pulses and correct it, in the same way as memorability_stim.",
            f"With corrected timing a decoder trained only on THINGS-EEG2 scores above chance in {n_sig['things_zeroshot']} of "
            f"{len(usable)} recordings without any lab training data (best: {best_things}, {score(S[best_things], 'things_zeroshot')[0]:+.3f})."]
-    limits = [f"Together the recordings reach about {best_pool / ref['things']['coarse8']:.0%} of the benchmark ({best_pool:+.2f} against "
+    vs = tuned["ft_full_ensemble_vs"]["0.1-30 Hz"]["things_prior"]["all"]
+    limits = [f"Together the recordings reach about {best_pool / ref['things']['coarse8']:.0%} of the benchmark with a linear readout and "
+              f"{best_net / ref['things']['coarse8']:.0%} with the fine-tuned network ({best_pool:+.2f} and {best_net:+.2f} against "
               f"{ref['things']['coarse8']:+.2f}): {pooled['n_images']} distinct images against 16,540 in THINGS-EEG2. Every recording shows "
               "one of two image sets, so new recordings add repeats, not images.",
+              f"The fine-tuned network is not reliably better than the linear readouts ({vs['mean_diff']:+.3f}, 95% interval "
+              f"{vs['ci95'][0]:+.3f} to {vs['ci95'][1]:+.3f}, against THINGS as prior), and it was pretrained on {n_pre} of the "
+              f"{pooled['n_images']} images. On the {n_new} it never saw it scores {net('0.1-30 Hz', 'never_seen'):+.3f}, the own decoder "
+              f"{net('0.1-30 Hz', 'never_seen', 'ridge_own'):+.3f}.",
               f"A single recording decodes weakly ({mean['within_person']:+.3f} with its own decoder), and the old-lab decoder does not "
               f"transfer to the slow image trials ({ref['new']['coarse8']:+.3f}).",
               "The timing is inferred from the data (pulses and images), not yet confirmed with a photodiode."
               + (f" {', '.join(unusable)} could not be used." if unusable else "")]
     for k, (title, items) in enumerate((("What is new", new), ("What still limits the reconstruction", limits))):
-        ax = fig.add_axes(R([0.04 + k * 0.47, 0.008, 0.45, 0.094])); ax.axis("off")
+        ax = fig.add_axes([0.04 + k * 0.47, 0.008 * OLD_H / NEW_H, 0.45, (0.094 * OLD_H + FOOT) / NEW_H]); ax.axis("off")
         ax.add_patch(FancyBboxPatch((0.005, 0.02), 0.99, 0.96, boxstyle="round,pad=0,rounding_size=0.03", transform=ax.transAxes,
                                     facecolor=SURFACE, edgecolor=GRID, linewidth=1))
-        ax.text(0.025, 0.90, title, fontsize=13, weight="bold", color=INK, va="top", transform=ax.transAxes)
-        ax.text(0.025, 0.72, "\n".join("• " + wrap(t, 88).replace("\n", "\n   ") for t in items), fontsize=9.5, color=INK2, va="top",
+        ax.text(0.025, 0.92, title, fontsize=13, weight="bold", color=INK, va="top", transform=ax.transAxes)
+        ax.text(0.025, 0.77, "\n".join("• " + wrap(t, 88).replace("\n", "\n   ") for t in items), fontsize=9.5, color=INK2, va="top",
                 linespacing=1.4, transform=ax.transAxes)
 
     RESULTS.mkdir(parents=True, exist_ok=True)
