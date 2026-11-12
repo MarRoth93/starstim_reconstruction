@@ -227,7 +227,7 @@ def main():
            "measure this from the stimulation pulses and correct it, in the same way as memorability_stim.",
            f"With corrected timing a decoder trained only on THINGS-EEG2 scores above chance in {n_sig['things_zeroshot']} of "
            f"{len(usable)} recordings without any lab training data (best: {best_things}, {score(S[best_things], 'things_zeroshot')[0]:+.3f})."]
-    limits = [f"The scores are about a tenth of the benchmark ({max(mean.values()):+.2f} against {ref['things']['coarse8']:+.2f}): 144 images "
+    limits = [f"The scores reach about {max(mean.values()) / ref['things']['coarse8']:.0%} of the benchmark ({max(mean.values()):+.2f} against {ref['things']['coarse8']:+.2f}): 144 images "
               "per recording against 16,540 in THINGS-EEG2.",
               "Pooling two people did not improve on a single person (E21 + E23), and the old-lab decoder does not transfer "
               f"to the slow image trials ({ref['new']['coarse8']:+.3f}).",

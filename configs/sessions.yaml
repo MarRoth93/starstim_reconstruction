@@ -40,3 +40,6 @@ sessions:
   # E26: slow-image codes 1401-1544 as in E23, so only its rapid-stream block is used
   - {id: E26, kind: stim, rsvp: true}
   - {id: E27, kind: stim, rsvp: true}
+  # E28, E29: slow-image codes 1401-1544 as in E23, so only their rapid-stream blocks are used
+  - {id: E28, kind: stim, rsvp: true}
+  - {id: E29, kind: stim, rsvp: true}
