@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Low-level reconstruction from a rapid-stream block (5 images per second, no stimulation), e.g. E21: 144 images x 20.
 
-    python scripts/run_rsvp_reconstruction.py --session E21 [--offset-ms 0]
+    python scripts/run_rsvp_reconstruction.py --session E21 [--offset-ms 0] [--bandpass 0.1 30]
 
 Fixed before the first run (2026-11-09). Input: data_sessions.load_rsvp (THINGS lab contract, 31 channels, 0-1 s, 250 Hz),
 ZCA per session (label-free), each image averaged over its kept repeats. Time zero is the image marker plus the session's
@@ -55,9 +55,11 @@ def image_means(x, trig, uniq, k=None, rng=None):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--session", default="E21"); ap.add_argument("--n-perm", type=int, default=2000)
     ap.add_argument("--offset-ms", type=float, nargs="+", default=None)
+    ap.add_argument("--bandpass", type=float, nargs=2, default=None)      # Hz, on the continuous data; tags the output files
     args = ap.parse_args()
-    R = load_rsvp(args.session, offset_ms=args.offset_ms)
-    out = RESULTS / (f"rsvp_{args.session}" + ("" if args.offset_ms is None else "_offset" + "_".join(f"{v:g}" for v in args.offset_ms)))
+    R = load_rsvp(args.session, offset_ms=args.offset_ms, bandpass=args.bandpass)
+    out = RESULTS / (f"rsvp_{args.session}" + ("" if args.offset_ms is None else "_offset" + "_".join(f"{v:g}" for v in args.offset_ms))
+                     + ("" if args.bandpass is None else f"_bp{args.bandpass[0]:g}-{args.bandpass[1]:g}"))
     tr = R["tr"]; trig = tr.trigger.values.astype(int); uniq = np.array(sorted(set(trig)))
     reps = np.array([np.sum(trig == u) for u in uniq])
     print(f"{args.session} rapid stream: {len(tr)} of {R['n_all']} trials kept, {len(uniq)} images, repeats {reps.min()}-{reps.max()}; "
