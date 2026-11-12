@@ -24,7 +24,7 @@ import numpy as np
 from matplotlib.patches import FancyBboxPatch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from starstim_recon.data_sessions import _folder, clock_error, rsvp_display_lag_ms, session_ids  # noqa: E402
+from starstim_recon.data_sessions import _folder, clock_error, rsvp_display_lag_ms, rsvp_usable, session_ids  # noqa: E402
 from starstim_recon.images import enhanced, photo, pixel32_many, to8  # noqa: E402
 from starstim_recon.paths import CACHE, RESULTS, THINGS_OBJECT_IMAGES  # noqa: E402
 
@@ -58,7 +58,7 @@ def load():
         missing = [str(f) for f in files.values() if not f.exists()]
         assert not missing, f"{sid}: missing {missing} (see the docstring for the commands)"
         s = {k: json.loads(files[k].read_text()) for k in ("j", "marker", "timing")}
-        s["pred"] = files["pred"]; s["usable"] = bool(s["timing"]["above_null"] and s["timing"]["automatic_offset_fits"])
+        s["pred"] = files["pred"]; s["usable"] = rsvp_usable(sid)
         s["person"] = _folder(sid).name.split("_")[-1]           # only counted, never shown
         S[sid] = s
     return S

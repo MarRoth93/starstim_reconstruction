@@ -21,6 +21,7 @@ Privacy: the PsychoPy files also hold questionnaire answers; only whitelisted co
 import csv
 import functools
 import glob
+import json
 from pathlib import Path
 
 import numpy as np
@@ -33,7 +34,7 @@ from scipy.ndimage import median_filter
 from scipy.stats import theilslopes
 
 from .channels import SESSION_26, SHARED_25, STARSTIM_31, STARSTIM_32
-from .paths import CACHE, CONFIGS, LAB_SESSIONS, THINGS_OBJECT_IMAGES
+from .paths import CACHE, CONFIGS, LAB_SESSIONS, RESULTS, THINGS_OBJECT_IMAGES
 
 FS, PRE, POST = 500, 100, 500                                  # -0.2..1.0 s at 500 Hz
 CUE = {70: "none", 71: "stim", 72: "pulse_only", 73: "blank"}
@@ -55,6 +56,15 @@ def rsvp_offset_ms(session_id: str):
     S = yaml.safe_load(open(CONFIGS / "sessions.yaml"))["sessions"]
     v = next((s.get("rsvp_offset_ms") for s in S if s["id"] == session_id), None)
     return v if v is None else tuple(float(q) for q in v) if isinstance(v, list) else (float(v), 0.0)
+
+
+def rsvp_usable(session_id: str) -> bool:
+    """Whether a session's rapid-stream block can be used: its timing check (scripts/check_rsvp_timing.py) found an
+    image-based estimate above its null and the automatic offset fits."""
+    f = RESULTS / f"rsvp_timing_{session_id}.json"
+    assert f.exists(), f"{session_id}: run scripts/check_rsvp_timing.py --session {session_id} first"
+    t = json.loads(f.read_text())
+    return bool(t["above_null"] and t["automatic_offset_fits"])
 
 
 def rsvp_display_lag_ms() -> float:

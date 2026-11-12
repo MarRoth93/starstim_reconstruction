@@ -10,7 +10,7 @@ import numpy as np
 import torch
 
 from . import data_old_lab, data_sessions, data_things
-from .channels import SHARED_25
+from .channels import SHARED_25, STARSTIM_31
 from .images import pixel32_many
 from .metrics import coarse8
 from .readout import aggregate, fit_primal_ridge, fit_ridge, nested_cv, zca_by_subject
@@ -18,10 +18,13 @@ from .readout import aggregate, fit_primal_ridge, fit_ridge, nested_cv, zca_by_s
 THINGS_ALPHA = 1e-3
 
 
-def things_readout(alpha=THINGS_ALPHA, exclude_basenames=()):
-    """Linear THINGS ridge (31 channels, lab contract) -> predict(torch (n, 31*250)) -> (n, 3*32*32)."""
-    keep = data_things.train_indices(exclude_basenames)
-    return fit_primal_ridge(data_things.eeg_means("train")[keep], data_things.targets("train")[keep].flatten(1), alpha)
+def things_readout(alpha=THINGS_ALPHA, exclude_basenames=(), channels=None):
+    """Linear THINGS ridge (31 channels, lab contract) -> predict(torch (n, 31*250)) -> (n, 3*32*32).
+    channels: a subset of the 31 by name; the readout then takes (n, len(channels)*250)."""
+    keep = data_things.train_indices(exclude_basenames); X = data_things.eeg_means("train")[keep]
+    if channels is not None:
+        X = X.view(len(X), 31, -1)[:, [STARSTIM_31.index(c) for c in channels]].flatten(1)
+    return fit_primal_ridge(X, data_things.targets("train")[keep].flatten(1), alpha)
 
 
 def things(alpha=THINGS_ALPHA):

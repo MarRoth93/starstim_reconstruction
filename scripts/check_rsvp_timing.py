@@ -35,12 +35,11 @@ from sklearn.covariance import LedoitWolf
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from starstim_recon import data_things  # noqa: E402
-from starstim_recon.channels import STARSTIM_31  # noqa: E402
+from starstim_recon.channels import POSTERIOR_10, STARSTIM_31  # noqa: E402
 from starstim_recon.data_sessions import (FS, REJECT_UV, _folder, image_table, rsvp_display_lag_ms, rsvp_offset_ms,  # noqa: E402
                                           rsvp_runs)
 from starstim_recon.paths import RESULTS  # noqa: E402
 
-POSTERIOR = ("O1", "Oz", "O2", "PO3", "PO4", "P7", "P8", "P3", "P4", "Pz")
 T0, T1, BIN = -1.0, 2.0, 10                                     # epoch around the marker (s), samples per 20-ms bin
 THINGS_WINDOW = (0.06, 0.30)                                    # THINGS latencies that are matched (s)
 SHIFTS_MS = np.arange(-700, 401, 20)                            # searched after the clock error is removed
@@ -70,7 +69,7 @@ def main():
     sd = (xall - xall.mean(1, keepdims=True)).std(0)
     left_out = [c for c, v, f in zip(STARSTIM_31, sd, flat) if f or v > 3 * np.median(sd)]
     ch = [c for c in STARSTIM_31 if c not in left_out]; ci = [STARSTIM_31.index(c) for c in ch]
-    post = [ch.index(c) for c in POSTERIOR if c in ch]
+    post = [ch.index(c) for c in POSTERIOR_10 if c in ch]
 
     ep, trig, pos, minute, clock = [], [], [], [], []
     for xh, on, trigger, p, _, t, cl in blocks:

@@ -12,3 +12,6 @@ STARSTIM_31 = [c for c in STARSTIM_32 if c != "Fz"]
 EARLY_STIM_ELECTRODES = ("F3", "F4", "C3", "C4", "PO3", "PO4")
 SESSION_26 = [c for c in STARSTIM_32 if c not in EARLY_STIM_ELECTRODES]
 SHARED_25 = [c for c in SESSION_26 if c != "Fz"]          # in both the sessions and the old lab / THINGS 31-channel set
+
+# occipital and parietal electrodes: the timing check matches on them, and the pooled rapid-stream decoder can use them alone
+POSTERIOR_10 = ("O1", "Oz", "O2", "PO3", "PO4", "P7", "P8", "P3", "P4", "Pz")

@@ -58,6 +58,7 @@ registering new sessions does not change it.
 | `scripts/run_things_prior.py` | THINGS ridge as a weight prior for the lab ridge (R6) |
 | `scripts/run_rsvp_reconstruction.py` | reconstruction from a rapid-stream block (E21, E23): THINGS zero-shot, within-person, THINGS prior, old-lab ridge |
 | `scripts/check_rsvp_timing.py` | checks the automatic timing correction of a rapid-stream block against an estimate from the images |
+| `scripts/run_rsvp_pooled.py` | one decoder on all usable rapid-stream recordings, averaged per image; with and without the band-pass and the posterior channels |
 | `scripts/make_results_infographic.py` | infographic of the current rapid-stream results and the timing correction, drawn from the result files |
 | `scripts/link_data.py`, `scripts/build_old_lab_manifest.py` | data setup |
 
@@ -119,7 +120,26 @@ their own decoder, although E28 has 20 repeats and a strong image-specific signa
 the offset changes by a few ms. The marker column is higher for E21 most likely because the baseline window (-0.2..0 s)
 then contains the image response, which the baseline subtraction copies into every sample.
 
-## Results so far (2026-11-06)
+## All usable recordings together (2026-11-12)
+
+The usable recordings (`data_sessions.rsvp_usable`: E21, E23, E24, E25, E27, E28, E29; 5 people, 11,846 kept trials)
+show only 262 distinct images: two fixed sets of 144 with 26 in common. `scripts/run_rsvp_pooled.py` whitens each
+recording, averages the recordings of every image and scores one decoder over the 262 images (design fixed before the
+first run). coarse8 over all images, without -> with the 0.1-30 Hz band-pass on the continuous data
+(`load_rsvp(..., bandpass=(0.1, 30))`, off by default):
+
+| Channels | Own decoder | THINGS zero-shot | THINGS prior |
+|---|---|---|---|
+| 31 | +0.041 -> +0.049 | +0.029 -> +0.047 | +0.040 -> +0.061 |
+| 10 posterior (`channels.POSTERIOR_10`) | +0.046 -> +0.040 | +0.037 -> +0.064 | +0.050 -> +0.062 |
+
+All twelve are above chance (p .0005 to .037); with a standard error of about 0.017 they do not differ reliably from
+each other. Within the two image sets (144 candidates each, as in the per-recording scores) the filtered THINGS prior on
+31 channels reaches +0.069 and +0.055. For comparison, the per-recording means are +0.022 (own decoder), +0.016 (THINGS
+zero-shot) and +0.019 (THINGS prior). Averaging the recordings is the main gain; simply stacking them into one decoder
+gives none (+0.020, one-off test). The band-pass alone, per recording, raises the THINGS readouts (zero-shot +0.013 ->
++0.027 on five recordings) and lowers the own decoder (+0.039 -> +0.029). New recordings add repeats, not images: more
+distinct images are what the decoder lacks.
 
 | Step | Question | Result |
 |---|---|---|
