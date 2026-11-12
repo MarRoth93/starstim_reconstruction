@@ -7,7 +7,8 @@ Draws only from result files, so run for every rapid-stream session of configs/s
     python scripts/check_rsvp_timing.py --session E<nn>
     python scripts/run_rsvp_reconstruction.py --session E<nn>                 # corrected timing
     python scripts/run_rsvp_reconstruction.py --session E<nn> --offset-ms 0   # time zero at the marker
-and python scripts/make_infographic.py for the three reference numbers (results/infographic_numbers.json).
+python scripts/run_rsvp_pooled.py for the decoders on all usable recordings together (results/rsvp_pooled.json), and
+python scripts/make_infographic.py for the three reference numbers (results/infographic_numbers.json).
 A session counts as usable when its timing check found an image-based estimate above its null and the automatic offset fits.
 Examples: 8 images of the usable session with the highest scores, drawn at random (seed 0), contrast-enhanced for display.
 Output: results/infographic_results.{png,pdf} and results/infographic_results_numbers.json.
@@ -29,13 +30,25 @@ from starstim_recon.images import enhanced, photo, pixel32_many, to8  # noqa: E4
 from starstim_recon.paths import CACHE, RESULTS, THINGS_OBJECT_IMAGES  # noqa: E402
 
 INK, INK2, MUTED, GRID, AXIS, SURFACE = "#0b0b0b", "#52514e", "#898781", "#e1e0d9", "#c3c2b7", "#fcfcfb"
-OWN, THINGS = "#2a78d6", "#eb6834"                               # the two readouts keep these colours in every panel
+OWN, THINGS, PRIOR = "#2a78d6", "#eb6834", "#1baf7a"             # the readouts keep these colours in every panel
+OLD_H, NEW_H, SPLIT, EXTRA = 21.0, 24.0, 0.60, 3.0               # a 3-inch band for the pooled panel, inserted at SPLIT
+POOLED = {"own_decoder": ("Own decoder", OWN, "within_person"), "things_zeroshot": ("THINGS decoder", THINGS, "things_zeroshot"),
+          "things_prior": ("THINGS as prior", PRIOR, "things_prior")}   # readout of run_rsvp_pooled -> label, colour, per-recording key
 READOUT = {"within_person": ("Own decoder (trained on the same recording)", OWN),
            "things_zeroshot": ("THINGS decoder (trained on THINGS-EEG2 only)", THINGS)}
 
 
 def wrap(text, width):
     return "\n".join(textwrap.wrap(text, width))
+
+
+def fy(y):
+    """Height in the 21-inch layout the panels were placed in -> height in the figure with the band inserted."""
+    return (y * OLD_H + (EXTRA if y >= SPLIT else 0)) / NEW_H
+
+
+def R(rect):
+    return [rect[0], fy(rect[1]), rect[2], rect[3] * OLD_H / NEW_H]
 
 
 def panel(fig, rect, title, subtitle=None):
@@ -72,6 +85,11 @@ def score(s, readout, timing="j"):
 def main():
     S = load(); ids = list(S); usable = [i for i in ids if S[i]["usable"]]; unusable = [i for i in ids if not S[i]["usable"]]
     ref = json.loads((RESULTS / "infographic_numbers.json").read_text())
+    assert (RESULTS / "rsvp_pooled.json").exists(), "run scripts/run_rsvp_pooled.py first"
+    pooled = json.loads((RESULTS / "rsvp_pooled.json").read_text())
+    assert pooled["sessions"] == usable, f"results/rsvp_pooled.json covers {pooled['sessions']}, usable are {usable}: rerun it"
+    pool = lambda f, c, r: pooled["results"][f][c][r]["all"]   # noqa: E731
+    best_pool = pool("0.1-30 Hz", "31 channels", "things_prior")["coarse8"]
     mean = {r: float(np.mean([score(S[i], r)[0] for i in usable])) for r in READOUT}
     n_sig = {r: sum(score(S[i], r)[1] < 0.05 for i in usable) for r in READOUT}
     drift = {}
@@ -84,12 +102,13 @@ def main():
                                 **{r: dict(zip(("coarse8", "p"), score(S[i], r))) for r in READOUT},
                                 **{f"{r}_at_marker": score(S[i], r, "marker")[0] for r in READOUT}} for i in ids},
                "mean_usable": mean, "n_significant_usable": n_sig, "usable": usable, "drifting": drifting, "reference": ref}
+    numbers["pooled"] = {f: {c: {r: pool(f, c, r)["coarse8"] for r in POOLED} for c in v} for f, v in pooled["results"].items()}
     print(json.dumps(numbers["mean_usable"]), "usable", usable, "drifting", drifting)
 
-    fig = plt.figure(figsize=(15, 21), facecolor="white")
-    fig.text(0.04, 0.985, "Low-level EEG image reconstruction of our lab data: where we stand", fontsize=24, weight="bold",
+    fig = plt.figure(figsize=(15, NEW_H), facecolor="white")
+    fig.text(0.04, fy(0.985), "Low-level EEG image reconstruction of our lab data: where we stand", fontsize=24, weight="bold",
              va="top", color=INK)
-    fig.text(0.04, 0.966, f"Rapid-stream recordings {ids[0]}-{ids[-1]} ({len(ids)} recordings, {len({S[i]['person'] for i in ids})} people): "
+    fig.text(0.04, fy(0.966), f"Rapid-stream recordings {ids[0]}-{ids[-1]} ({len(ids)} recordings, {len({S[i]['person'] for i in ids})} people): "
              "144 images at 5 per second, StarStim 32, no stimulation during the block. Target: the coarse 8x8 colour layout.\n"
              "Score = coarse8: correlation of the reconstructed layout with the true one, relative to the other images of the "
              "recording (0 = chance, 1 = perfect).", fontsize=11.5, va="top", color=INK2, linespacing=1.5)
@@ -102,7 +121,7 @@ def main():
              ("Rapid stream, THINGS decoder", f"{mean['things_zeroshot']:+.3f}",
               f"mean of {len(usable)} usable recordings; {n_sig['things_zeroshot']} above chance")]
     for k, (label, value, note) in enumerate(tiles):
-        ax = fig.add_axes([0.04 + k * 0.235, 0.876, 0.215, 0.058]); ax.axis("off")
+        ax = fig.add_axes(R([0.04 + k * 0.235, 0.876, 0.215, 0.058])); ax.axis("off")
         ax.add_patch(FancyBboxPatch((0.01, 0.03), 0.98, 0.94, boxstyle="round,pad=0,rounding_size=0.05", transform=ax.transAxes,
                                     facecolor=SURFACE, edgecolor=GRID, linewidth=1))
         ax.text(0.06, 0.80, label, fontsize=10.5, color=INK2, va="center", transform=ax.transAxes)
@@ -112,7 +131,7 @@ def main():
             ax.add_patch(plt.Rectangle((0.01, 0.12), 0.014, 0.76, transform=ax.transAxes, color=(OWN, THINGS)[k - 2], lw=0))
 
     # ---------------------------------------------------------------------------------------------- scores per recording
-    ax = panel(fig, [0.07, 0.655, 0.55, 0.165], "Reconstruction score per recording, corrected timing",
+    ax = panel(fig, R([0.07, 0.655, 0.55, 0.165]), "Reconstruction score per recording, corrected timing",
                "Two ways to decode the same recording. * = above chance (permutation test, p < .05).")
     w = 0.2; top = max(max(score(S[i], r)[0] for i in ids for r in READOUT), ref["old"]["coarse8"]) + 0.03
     for k, (r, (label, col)) in enumerate(READOUT.items()):
@@ -135,19 +154,43 @@ def main():
             + ")." if unusable else ""), transform=ax.transAxes, fontsize=9.5, color=MUTED)
 
     # ---------------------------------------------------------------------------------------------- on the benchmark's scale
-    ax = panel(fig, [0.74, 0.655, 0.22, 0.165], "On the scale of the benchmark", "The same score, all datasets.")
+    ax = panel(fig, R([0.74, 0.655, 0.22, 0.165]), "On the scale of the benchmark", "The same score, all datasets.")
     rows = [("THINGS-EEG2", ref["things"]["coarse8"], INK2), ("Old lab", ref["old"]["coarse8"], INK2),
             ("Rapid stream,\nown decoder", mean["within_person"], OWN), ("Rapid stream,\nTHINGS decoder", mean["things_zeroshot"], THINGS),
+            ("All recordings together,\nTHINGS as prior, filtered", best_pool, PRIOR),
             ("Slow trials E06-E20,\nold-lab decoder", ref["new"]["coarse8"], INK2)]
     for k, (label, v, col) in enumerate(rows):
-        y = len(rows) - 1 - k; ax.barh(y, v, 0.3, color=col, zorder=3)
+        y = len(rows) - 1 - k; ax.barh(y, v, 0.34, color=col, zorder=3)
         ax.text(max(v, 0) + 0.012, y, f"{v:+.3f}", va="center", fontsize=10, color=INK)
-    ax.set_yticks(range(len(rows))); ax.set_yticklabels([r[0] for r in rows][::-1], fontsize=9.5, color=INK2)
+    ax.set_yticks(range(len(rows))); ax.set_yticklabels([r[0] for r in rows][::-1], fontsize=9, color=INK2)
     ax.axvline(0, color=AXIS, lw=1); ax.set_xlim(-0.03, 0.56); ax.xaxis.grid(True, color=GRID, lw=1); ax.spines["left"].set_visible(False)
+
+    # ---------------------------------------------------------------------------------------------- all recordings together
+    single = {r: float(np.mean([score(S[i], POOLED[r][2])[0] for i in usable])) for r in POOLED}
+    for k, cname in enumerate(("31 channels", "10 posterior")):
+        ax = panel(fig, [0.21 + k * 0.33, 0.552, 0.27, 0.064],
+                   f"All {len(usable)} usable recordings together: averaged per image, one decoder on {pooled['n_images']} images" if k == 0 else " ",
+                   "31 channels" if k == 0 else "10 posterior channels")
+        for j, (r, (label, col, _)) in enumerate(POOLED.items()):
+            y = len(POOLED) - 1 - j; a, b = pool("none", cname, r)["coarse8"], pool("0.1-30 Hz", cname, r)["coarse8"]
+            ax.plot([a, b], [y, y], color=AXIS, lw=2, zorder=2, solid_capstyle="round")
+            ax.plot(single[r], y, "|", ms=13, mew=2, color=MUTED, zorder=3)
+            ax.plot(a, y, "o", ms=8, color=SURFACE, mec=MUTED, mew=1.5, zorder=3)
+            ax.plot(b, y, "o", ms=9, color=col, mec=SURFACE, mew=2, zorder=4)
+            ax.text(max(a, b) + 0.004, y, f"{b:+.3f}", va="center", fontsize=9.5, color=INK)
+        ax.axvline(0, color=AXIS, lw=1, zorder=1); ax.set_xlim(-0.005, 0.085); ax.set_ylim(-0.6, len(POOLED) - 0.4)
+        ax.set_yticks(range(len(POOLED))); ax.set_yticklabels([v[0] for v in POOLED.values()][::-1] if k == 0 else [], fontsize=10, color=INK2)
+        ax.xaxis.grid(True, color=GRID, lw=1); ax.spines["left"].set_visible(False); ax.set_xticks([0, 0.02, 0.04, 0.06, 0.08])
+        if k == 0:
+            ax.plot([], [], "|", ms=13, mew=2, color=MUTED, label="mean of the single recordings")
+            ax.plot([], [], "o", ms=8, color=SURFACE, mec=MUTED, mew=1.5, label="all together, no filter")
+            ax.plot([], [], "o", ms=9, color=INK2, mec=SURFACE, mew=2, label="all together, 0.1-30 Hz band-pass")
+            ax.legend(loc="upper left", bbox_to_anchor=(-0.02, -0.22), fontsize=9.5, frameon=False, ncol=3, handletextpad=0.3,
+                      columnspacing=1.4, labelcolor=INK2)
 
     # ---------------------------------------------------------------------------------------------- the clock
     big = [i for i in drifting if np.abs(drift[i][1]).max() > 500]
-    ax = panel(fig, [0.07, 0.425, 0.40, 0.135], "The EEG clock drifts in some sessions",
+    ax = panel(fig, R([0.07, 0.425, 0.40, 0.135]), "The EEG clock drifts in some sessions",
                f"Error of the EEG time stamps against the marker clock, from the stimulation pulses. {len(drifting)} of "
                f"{len(drifting) + len(steady)} sessions drift.")
     for i in steady:
@@ -179,7 +222,7 @@ def main():
     # ---------------------------------------------------------------------------------------------- what the correction does
     lag = rsvp_display_lag_ms()
     for k, (r, (label, col)) in enumerate(READOUT.items()):
-        ax = panel(fig, [0.60 + k * 0.19, 0.425, 0.16, 0.135], "What the timing correction changes" if k == 0 else " ",
+        ax = panel(fig, R([0.60 + k * 0.19, 0.425, 0.16, 0.135]), "What the timing correction changes" if k == 0 else " ",
                    "Own decoder" if k == 0 else "THINGS decoder")
         for j, i in enumerate(usable):
             y = len(usable) - 1 - j; a, b = score(S[i], r, "marker")[0], score(S[i], r)[0]
@@ -206,12 +249,12 @@ def main():
     for r, (label, col) in READOUT.items():
         rows.append((("own decoder" if r == "within_person" else "THINGS decoder"), enhanced(to8(P[r]), t8, groups)[pick],
                      P[f"coarse8_{r}"][pick]))
-    fig.text(0.04, 0.335, f"What the reconstructions look like: {best}, 8 images drawn at random", fontsize=14, weight="bold", color=INK)
-    fig.text(0.04, 0.321, "Contrast-enhanced for display. The number above a reconstruction is the coarse8 of that image.",
+    fig.text(0.04, fy(0.335), f"What the reconstructions look like: {best}, 8 images drawn at random", fontsize=14, weight="bold", color=INK)
+    fig.text(0.04, fy(0.321), "Contrast-enhanced for display. The number above a reconstruction is the coarse8 of that image.",
              fontsize=10.5, color=INK2)
     for q, (label, ims, vals) in enumerate(rows):
         for j in range(8):
-            ax = fig.add_axes([0.16 + j * 0.101, 0.266 - q * 0.0525, 0.062, 0.0443])
+            ax = fig.add_axes(R([0.16 + j * 0.101, 0.266 - q * 0.0525, 0.062, 0.0443]))
             ax.imshow(ims[j], interpolation="nearest"); ax.set_xticks([]); ax.set_yticks([])
             for sp in ax.spines.values():
                 sp.set_color(AXIS)
@@ -222,23 +265,25 @@ def main():
 
     # ---------------------------------------------------------------------------------------------- what it means
     best_things = max(usable, key=lambda i: score(S[i], "things_zeroshot")[0])
-    new = [f"{len(ids)} rapid-stream recordings from {len({S[i]['person'] for i in ids})} people; {len(usable)} are usable.",
+    new = [f"{len(ids)} rapid-stream recordings from {len({S[i]['person'] for i in ids})} people; {len(usable)} are usable, with "
+           f"{pooled['n_images']} distinct images. Averaged per image and decoded together they reach {best_pool:+.3f}.",
            f"The EEG clock runs off the marker clock in {len(drifting)} of {len(drifting) + len(steady)} sessions. Both loaders now "
            "measure this from the stimulation pulses and correct it, in the same way as memorability_stim.",
            f"With corrected timing a decoder trained only on THINGS-EEG2 scores above chance in {n_sig['things_zeroshot']} of "
            f"{len(usable)} recordings without any lab training data (best: {best_things}, {score(S[best_things], 'things_zeroshot')[0]:+.3f})."]
-    limits = [f"The scores reach about {max(mean.values()) / ref['things']['coarse8']:.0%} of the benchmark ({max(mean.values()):+.2f} against {ref['things']['coarse8']:+.2f}): 144 images "
-              "per recording against 16,540 in THINGS-EEG2.",
-              "Pooling two people did not improve on a single person (E21 + E23), and the old-lab decoder does not transfer "
-              f"to the slow image trials ({ref['new']['coarse8']:+.3f}).",
+    limits = [f"Together the recordings reach about {best_pool / ref['things']['coarse8']:.0%} of the benchmark ({best_pool:+.2f} against "
+              f"{ref['things']['coarse8']:+.2f}): {pooled['n_images']} distinct images against 16,540 in THINGS-EEG2. Every recording shows "
+              "one of two image sets, so new recordings add repeats, not images.",
+              f"A single recording decodes weakly ({mean['within_person']:+.3f} with its own decoder), and the old-lab decoder does not "
+              f"transfer to the slow image trials ({ref['new']['coarse8']:+.3f}).",
               "The timing is inferred from the data (pulses and images), not yet confirmed with a photodiode."
               + (f" {', '.join(unusable)} could not be used." if unusable else "")]
     for k, (title, items) in enumerate((("What is new", new), ("What still limits the reconstruction", limits))):
-        ax = fig.add_axes([0.04 + k * 0.47, 0.010, 0.45, 0.088]); ax.axis("off")
+        ax = fig.add_axes(R([0.04 + k * 0.47, 0.008, 0.45, 0.094])); ax.axis("off")
         ax.add_patch(FancyBboxPatch((0.005, 0.02), 0.99, 0.96, boxstyle="round,pad=0,rounding_size=0.03", transform=ax.transAxes,
                                     facecolor=SURFACE, edgecolor=GRID, linewidth=1))
         ax.text(0.025, 0.90, title, fontsize=13, weight="bold", color=INK, va="top", transform=ax.transAxes)
-        ax.text(0.025, 0.70, "\n".join("• " + wrap(t, 84).replace("\n", "\n   ") for t in items), fontsize=9.8, color=INK2, va="top",
+        ax.text(0.025, 0.72, "\n".join("• " + wrap(t, 88).replace("\n", "\n   ") for t in items), fontsize=9.5, color=INK2, va="top",
                 linespacing=1.4, transform=ax.transAxes)
 
     RESULTS.mkdir(parents=True, exist_ok=True)
