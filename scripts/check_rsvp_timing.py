@@ -4,20 +4,22 @@
     python scripts/check_rsvp_timing.py --session E23
 
 Run it for every new rapid-stream session. The loader moves every image marker by the session's clock error (measured from
-the stimulation pulses, data_sessions.clock_error) plus rsvp_display_lag_ms. This script compares that with an estimate
-from the images themselves and says whether the two agree; nothing has to be entered for a session where they do.
+the stimulation pulses, data_sessions.clock_error) plus rsvp_display_lag_ms. This script applies the clock error and then
+estimates from the images themselves what is left; nothing has to be entered for a session where that matches the display
+lag.
 
-Marker timing as recorded (data_sessions.rsvp_runs), 0.5 Hz high-pass instead of a baseline, average reference without the
-channels that are flat or noisy in the block (SD > 3x median), 150 µV rejection, 20-ms bins, 10 posterior channels.
-  offset       shift s that maximises the similarity between this session at t + s and the THINGS-EEG2 lab-contract
+Every image marker moved by the clock error at its time, 0.5 Hz high-pass instead of a baseline, average reference without
+the channels that are flat or noisy in the block (SD > 3x median), 150 µV rejection, 20-ms bins, 10 posterior channels.
+  remainder    shift s that maximises the similarity between this session at t + s and the THINGS-EEG2 lab-contract
                responses to the same images at t = 60-300 ms (label-free: only the pairing of images is used). Null: images
                re-paired, maximum |r| over all shifts. Controls: one THINGS subject against the other nine gives 0 ms,
                the old lab against THINGS +20 ms.
-  by quarter   the same for each quarter of the block in time, next to the clock error there: what remains is the delay
-               of the display relative to THINGS-EEG2, which should match rsvp_display_lag_ms within the 20-ms steps
+  by quarter   the same for each quarter of the block in time: the delay of the display relative to THINGS-EEG2, which
+               should match rsvp_display_lag_ms. People differ by a few tens of ms, and the estimate moves in 20-ms steps,
+               so the automatic offset counts as fitting within 40 ms.
   reliability  odd against even repeats of an image, per bin: when is there image-specific signal at all?
   start        mean response of the posterior channels to the start of a sequence
-If the two disagree (for example a drifting session without stimulation pulses), the script prints an rsvp_offset_ms line
+If it does not fit (for example a drifting session without stimulation pulses), the script prints an rsvp_offset_ms line
 for configs/sessions.yaml, fitted to the quarters. The image order is shuffled between repeats, so the previous image
 cannot produce an image-specific signal.
 Output: results/rsvp_timing_<session>.json.
@@ -41,7 +43,8 @@ from starstim_recon.paths import RESULTS  # noqa: E402
 POSTERIOR = ("O1", "Oz", "O2", "PO3", "PO4", "P7", "P8", "P3", "P4", "Pz")
 T0, T1, BIN = -1.0, 2.0, 10                                     # epoch around the marker (s), samples per 20-ms bin
 THINGS_WINDOW = (0.06, 0.30)                                    # THINGS latencies that are matched (s)
-SHIFTS_MS = np.arange(-700, 401, 20)
+SHIFTS_MS = np.arange(-700, 401, 20)                            # searched after the clock error is removed
+TOLERANCE_MS = 40
 N_NULL = 300
 
 
@@ -54,13 +57,15 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--session", required=True); args = ap.parse_args()
     rng = np.random.default_rng(0)
     sos = signal.butter(2, 0.5, btype="high", fs=FS, output="sos"); a, b = int(T0 * FS), int(T1 * FS)
+    runs = list(rsvp_runs(args.session))
+    assert runs, f"{args.session}: no rapid-stream block"
     blocks = []
-    for _, x, trigger, on, seq, clock_ms in rsvp_runs(args.session):
+    for _, x, trigger, on, seq, clock_ms in runs:
+        t_min = on / FS / 60; on = on + np.round(clock_ms / 1000 * FS).astype(int)       # the clock error removed
         lo, hi = max(on.min() + a - 5 * FS, 0), min(on.max() + b + 5 * FS, len(x))
         pos = np.array([np.sum(seq[:i + 1] == seq[i]) for i in range(len(seq))])            # 1..24 within its sequence
         flat = (np.diff(x[lo:hi], axis=0) == 0).mean(0) > 0.5
-        blocks.append((signal.sosfiltfilt(sos, x[lo:hi], axis=0), on - lo, trigger, pos, flat, on / FS / 60, clock_ms))
-    assert blocks, f"{args.session}: no rapid-stream block"
+        blocks.append((signal.sosfiltfilt(sos, x[lo:hi], axis=0), on - lo, trigger, pos, flat, t_min, clock_ms))
     xall = np.concatenate([q[0] for q in blocks]); flat = np.any([q[4] for q in blocks], axis=0)
     sd = (xall - xall.mean(1, keepdims=True)).std(0)
     left_out = [c for c, v, f in zip(STARSTIM_31, sd, flat) if f or v > 3 * np.median(sd)]
@@ -89,7 +94,7 @@ def main():
     rel = col_r(odd, even)[post].mean(0)
     rel_thr = float(np.percentile([col_r(odd, even[rng.permutation(len(uniq))])[post].mean(0).max() for _ in range(N_NULL)], 95))
     above = [int(round(t * 1000)) for t in tb[rel > rel_thr]]
-    print(f"reliability (odd vs even repeats): above the threshold {rel_thr:+.3f} at {above} ms relative to the marker; "
+    print(f"reliability (odd vs even repeats): above the threshold {rel_thr:+.3f} at {above} ms after the corrected marker; "
           f"peak {rel.max():+.3f} at {tb[rel.argmax()] * 1000:+.0f} ms")
 
     # offset: best match with the THINGS-EEG2 responses to the same images
@@ -120,28 +125,26 @@ def main():
     for _ in range(N_NULL):
         m = means.copy(); m[order] = means[rng.permutation(order)]; null.append(np.abs(curve(m)).max())
     null95 = float(np.percentile(null, 95)); found = bool(c[k] > null95)
-    print(f"offset: best shift {SHIFTS_MS[k]:+d} ms (r {c[k]:+.3f}; r at the marker {c[list(SHIFTS_MS).index(0)]:+.3f}; "
-          f"null 95% {null95:.3f}; {len(shared)} images shared with THINGS-EEG2)")
+    print(f"remainder after the clock error: best shift {SHIFTS_MS[k]:+d} ms (r {c[k]:+.3f}; null 95% {null95:.3f}; "
+          f"{len(shared)} images shared with THINGS-EEG2)")
 
     by_quarter = []
     for idx in np.array_split(np.arange(len(ep)), 4):            # trials are in time order
         m = np.zeros(len(ep), bool); m[idx] = True
         cm = curve(np.stack([eb[m & (trig == u)].mean(0) if (m & (trig == u)).any() else np.zeros(eb.shape[1:]) for u in uniq]))
-        q = {"minute": round(float(minute[idx].mean()), 1), "best_shift_ms": int(SHIFTS_MS[cm.argmax()]), "r": round(float(cm.max()), 4),
-             "clock_ms": round(float(clock[idx].mean()), 1)}
-        q["display_lag_ms"] = round(q["best_shift_ms"] - q["clock_ms"], 1); by_quarter.append(q)
-    print("by quarter of the block (minute of the run, best shift, clock error from the pulses, remaining display lag):")
+        by_quarter.append({"minute": round(float(minute[idx].mean()), 1), "clock_ms": round(float(clock[idx].mean()), 1),
+                           "display_lag_ms": int(SHIFTS_MS[cm.argmax()]), "r": round(float(cm.max()), 4)})
+    print("by quarter of the block (minute of the run, clock error from the pulses, remaining display lag):")
     for q in by_quarter:
-        print(f"  {q['minute']:5.1f} min: {q['best_shift_ms']:+5d} ms (r {q['r']:+.3f})   clock {q['clock_ms']:+7.1f} ms   "
-              f"display lag {q['display_lag_ms']:+6.1f} ms")
+        print(f"  {q['minute']:5.1f} min: clock {q['clock_ms']:+7.1f} ms   display lag {q['display_lag_ms']:+5d} ms (r {q['r']:+.3f})")
 
     erp = start.mean(0)[post].mean(0).reshape(nb, BIN).mean(-1); m = (tb > -0.5) & (tb < 0.4)
-    print(f"start of a sequence ({len(start)} sequences), posterior channels (µV) by time relative to the first marker (ms):")
+    print(f"start of a sequence ({len(start)} sequences), posterior channels (µV) by time after the first corrected marker (ms):")
     print("  " + " ".join(f"{int(round(t * 1000)):+5d}" for t in tb[m][::2]))
     print("  " + " ".join(f"{v:+5.1f}" for v in erp[m][::2]))
 
     lag = rsvp_display_lag_ms(); implied = float(np.median([q["display_lag_ms"] for q in by_quarter]))
-    agrees = found and abs(implied - lag) <= 20                  # the image-based estimate moves in 20-ms steps
+    agrees = found and abs(implied - lag) <= TOLERANCE_MS
     print(f"clock error from the pulses: {clock[0]:+.0f} ms at the first image, {clock[-1]:+.0f} ms at the last"
           + ("" if clock.any() else " (no correction for this session)"))
     print(f"display lag implied by the images: {implied:+.0f} ms (median of the quarters); configured {lag:+g} ms")
@@ -151,7 +154,7 @@ def main():
     elif agrees:
         print("-> the automatic offset fits" + (f"; the rsvp_offset_ms {list(override)} of this session is not needed" if override else ""))
     else:
-        t, v = np.array([q["minute"] for q in by_quarter]), np.array([q["best_shift_ms"] for q in by_quarter], float)
+        t = np.array([q["minute"] for q in by_quarter]); v = np.array([q["clock_ms"] + q["display_lag_ms"] for q in by_quarter])
         slope = float(np.polyfit(t, v, 1)[0]) if np.ptp(v) >= 40 else 0.0
         suggested = [round(float(v.mean() - slope * t.mean()), 1), round(slope, 2)]
         print(f"-> the automatic offset does NOT fit; enter for this session  rsvp_offset_ms: [{suggested[0]:g}, {suggested[1]:g}]"
@@ -159,7 +162,7 @@ def main():
     RESULTS.mkdir(parents=True, exist_ok=True)
     (RESULTS / f"rsvp_timing_{args.session}.json").write_text(json.dumps(
         {"session": args.session, "n_trials": int(len(ep)), "n_images": int(len(uniq)), "channels_left_out": left_out,
-         "n_shared_with_things": len(shared), "best_shift_ms": int(SHIFTS_MS[k]), "r": float(c[k]), "null95": null95,
+         "n_shared_with_things": len(shared), "remainder_ms": int(SHIFTS_MS[k]), "r": float(c[k]), "null95": null95,
          "above_null": found, "clock_ms": [float(clock[0]), float(clock[-1])], "by_quarter": by_quarter,
          "display_lag_implied_ms": implied, "display_lag_configured_ms": lag, "automatic_offset_fits": bool(agrees),
          "configured_override_ms": override, "suggested_override_ms": suggested,

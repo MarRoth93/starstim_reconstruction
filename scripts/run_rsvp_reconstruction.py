@@ -15,7 +15,8 @@ Scored per image against the session's own images
   things_prior     within_person shrunk toward the THINGS ridge weights (alpha grid up to 1e9 = THINGS alone)
   old_lab          the old-lab ridge (25 shared channels, image averages), zero-shot
 Repeat curve: test-image averages over k = 2, 5, 10 random repeats (20 draws each; training inputs unchanged).
-Output: results/rsvp_<session>[_offset<ms>].json and ..._examples.png (8 random images, seed 0).
+Output: results/rsvp_<session>[_offset<ms>].json, ..._predictions.npz (the 32x32 prediction and the coarse8 of every image
+per readout; read by scripts/make_results_infographic.py) and ..._examples.png (8 random images, seed 0).
 """
 import argparse
 import json
@@ -34,7 +35,7 @@ from starstim_recon.channels import SHARED_25, STARSTIM_31  # noqa: E402
 from starstim_recon.data_sessions import load_rsvp  # noqa: E402
 from starstim_recon.images import enhanced, photo, pixel32_many, to8  # noqa: E402
 from starstim_recon.metrics import coarse8, paired_bootstrap, score  # noqa: E402
-from starstim_recon.paths import RESULTS  # noqa: E402
+from starstim_recon.paths import RESULTS, THINGS_OBJECT_IMAGES  # noqa: E402
 from starstim_recon.readout import nested_cv, nested_prior_cv, zca_by_subject  # noqa: E402
 
 ZCA_SCALE = 1.1                                      # the THINGS lab-contract cache is ZCA-whitened x1.1
@@ -106,6 +107,10 @@ def main():
          "repeats": [int(reps.min()), int(reps.max())],
          "results": results, "paired_vs_within_person": paired, "things_prior_alpha_per_fold": prior_alphas,
          "repeat_curve": {str(k): v for k, v in dose.items()}}, indent=2))
+    np.savez_compressed(f"{out}_predictions.npz", trigger=uniq,
+                        image=np.array([str(R["files"][int(u)].relative_to(THINGS_OBJECT_IMAGES)) for u in uniq]),
+                        **{n: np.asarray(p, np.float32).reshape(-1, 3, 32, 32) for n, p in preds.items()},
+                        **{f"coarse8_{n}": values[n] for n in preds})
 
     pick = np.sort(np.random.default_rng(0).choice(len(uniq), 8, replace=False))
     t8 = to8(true32); rows = [("photo", [photo(R["files"][int(uniq[i])]) for i in pick]), ("true 8x8", t8[pick])]

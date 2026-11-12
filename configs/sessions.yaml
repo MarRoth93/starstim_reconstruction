@@ -35,3 +35,8 @@ sessions:
   # E23: its slow-image codes are 1401-1544, outside the 1001-1299 the slow-trial loader reads,
   # so only its rapid-stream block is used
   - {id: E23, kind: stim, rsvp: true}
+  - {id: E24, kind: stim, rsvp: true}
+  - {id: E25, kind: stim, rsvp: true}
+  # E26: slow-image codes 1401-1544 as in E23, so only its rapid-stream block is used
+  - {id: E26, kind: stim, rsvp: true}
+  - {id: E27, kind: stim, rsvp: true}

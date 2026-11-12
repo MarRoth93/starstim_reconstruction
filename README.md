@@ -58,6 +58,7 @@ registering new sessions does not change it.
 | `scripts/run_things_prior.py` | THINGS ridge as a weight prior for the lab ridge (R6) |
 | `scripts/run_rsvp_reconstruction.py` | reconstruction from a rapid-stream block (E21, E23): THINGS zero-shot, within-person, THINGS prior, old-lab ridge |
 | `scripts/check_rsvp_timing.py` | checks the automatic timing correction of a rapid-stream block against an estimate from the images |
+| `scripts/make_results_infographic.py` | infographic of the current rapid-stream results and the timing correction, drawn from the result files |
 | `scripts/link_data.py`, `scripts/build_old_lab_manifest.py` | data setup |
 
 ## Timing: EEG clock drift (2026-11-11)
@@ -79,31 +80,39 @@ the sessions both repositories read (E14-E25). The result is cached in `cache/<s
 | E19 | -49 -> -109 |
 | E21 | -111 -> -243 |
 | E23 | -97 -> -189 |
+| E26 | +919 -> +2055 (EEG stamped after the markers) |
+| E27 | -63 -> +3 (first recording 63-89 ms behind, second on time) |
 
 The cause of the drift is unknown. For the slow image trials the correction leaves the session transfer (R5) where it
 was: -0.010 before, -0.011 after, with E06-E15 and E20 unchanged to four decimals.
 
 ## Rapid-stream sessions (2026-11-11)
 
-E21 and E23 contain a block without stimulation in which 144 images are shown at 5 images per second in shuffled order.
-Time zero of an epoch is the image marker plus the clock error at that time plus `rsvp_display_lag_ms`
+E21 and E23-E27 contain a block without stimulation in which 144 images are shown at 5 images per second in shuffled
+order. Time zero of an epoch is the image marker plus the clock error at that time plus `rsvp_display_lag_ms`
 (`configs/sessions.yaml`, 46 ms): the delay of the image on our screen relative to THINGS-EEG2 timing, which the pulses
-cannot measure. `scripts/check_rsvp_timing.py` checks the result against an estimate from the images themselves (best
-match with the THINGS-EEG2 responses to the same images, per quarter of the block; 0 ms for a THINGS subject against the
-others, +20 ms for the old lab). In E21 and E23 the two agree in every quarter, and the remainder is 46 ms in both. Not
-confirmed with a photodiode. A session without stimulation pulses cannot be corrected automatically; if it drifts, the
-check prints an `rsvp_offset_ms` line to enter for that session.
+cannot measure. `scripts/check_rsvp_timing.py` removes the clock error and estimates from the images themselves what is
+left (best match with the THINGS-EEG2 responses to the same images, per quarter of the block; 0 ms for a THINGS subject
+against the others, +20 ms for the old lab). That remainder is constant within every usable recording (E21 +40, E23 +40 to
++60, E24 +60, E25 +40, E27 +20 ms) and counts as fitting within 40 ms of the constant. Not confirmed with a photodiode.
+A session without stimulation pulses cannot be corrected automatically; if it drifts, the check prints an
+`rsvp_offset_ms` line to enter for that session.
 
 | Session | Images x repeats | Within-person | THINGS zero-shot | THINGS prior | Within-person, time zero at the marker |
 |---|---|---|---|---|---|
 | E21 | 144 x 20 | +0.042 (p .024) | +0.012 (p .30) | +0.014 (p .25) | +0.081 (p .001) |
 | E23 | 144 x 10 | +0.021 (p .18) | +0.052 (p .006) | +0.044 (p .024) | +0.014 (p .28) |
+| E24 | 144 x 20 | +0.051 (p .009) | +0.043 (p .022) | +0.035 (p .048) | +0.033 (p .051) |
+| E25 | 144 x 5 | +0.050 (p .011) | -0.003 (p .57) | +0.005 (p .42) | +0.049 (p .013) |
+| E27 | 144 x 10 | +0.031 (p .083) | -0.039 (p .97) | +0.000 (p .51) | +0.034 (p .055) |
 
-(`python scripts/run_rsvp_reconstruction.py --session E21`, with `--offset-ms 0` for the last column.) With the drift
-removed the THINGS ridge transfers to E23 without any lab training data; for E21 it does not reach significance. These
-scores move by about 0.01-0.02 when the offset changes by a few ms. The marker column is higher for E21 most likely
-because the baseline window (-0.2..0 s) then contains the image response, which the baseline subtraction copies into
-every sample.
+E26 is not usable: its EEG is stamped 2.5-3.2 s after the markers during the block, the stimulation electrodes and three
+occipital channels are flat or noisy, 845 of 2880 trials survive, and the check finds no image-specific signal.
+(`python scripts/run_rsvp_reconstruction.py --session E21`, with `--offset-ms 0` for the last column;
+`python scripts/make_results_infographic.py` draws the overview.) With the drift removed the THINGS ridge scores above
+chance in E23 and E24 without any lab training data, not in E21, E25 and E27. These scores move by about 0.01-0.02 when
+the offset changes by a few ms. The marker column is higher for E21 most likely because the baseline window (-0.2..0 s)
+then contains the image response, which the baseline subtraction copies into every sample.
 
 ## Results so far (2026-11-06)
 
