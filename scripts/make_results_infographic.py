@@ -8,7 +8,8 @@ Draws only from result files, so run for every rapid-stream session of configs/s
     python scripts/run_rsvp_reconstruction.py --session E<nn>                 # corrected timing
     python scripts/run_rsvp_reconstruction.py --session E<nn> --offset-ms 0   # time zero at the marker
 python scripts/run_rsvp_pooled.py for the decoders on all usable recordings together (results/rsvp_pooled.json),
-python scripts/run_rsvp_finetune.py for the fine-tuned THINGS network on the same recordings (results/rsvp_finetune.json), and
+python scripts/run_rsvp_finetune.py for the fine-tuned THINGS network on the same recordings (results/rsvp_finetune.json),
+python scripts/run_rsvp_learning_curves.py for the same decoders trained on less (results/rsvp_learning_curves.json), and
 python scripts/make_infographic.py for the three reference numbers (results/infographic_numbers.json).
 A session counts as usable when its timing check found an image-based estimate above its null and the automatic offset fits.
 Examples: 8 images of the usable session with the highest scores, drawn at random (seed 0), contrast-enhanced for display.
@@ -32,8 +33,9 @@ from starstim_recon.paths import CACHE, RESULTS, THINGS_OBJECT_IMAGES  # noqa: E
 
 INK, INK2, MUTED, GRID, AXIS, SURFACE = "#0b0b0b", "#52514e", "#898781", "#e1e0d9", "#c3c2b7", "#fcfcfb"
 OWN, THINGS, PRIOR, NET = "#2a78d6", "#eb6834", "#1baf7a", "#eda100"   # the readouts keep these colours in every panel
-OLD_H, SPLIT, EXTRA, FOOT = 21.0, 0.60, 4.2, 0.55                # inches added to the 21-inch layout: a band for the pooled
-NEW_H = OLD_H + EXTRA + FOOT                                     # panel, inserted at SPLIT, and taller text boxes at the foot
+OLD_H, SPLIT, EXTRA, FOOT = 21.0, 0.60, 8.9, 0.55                # inches added to the 21-inch layout: a band for the pooled
+NEW_H = OLD_H + EXTRA + FOOT                                     # panels, inserted at SPLIT, and taller text boxes at the foot
+BAND = SPLIT * OLD_H + FOOT                                      # where the band starts, in inches from the bottom
 POOLED = {"own_decoder": ("Own decoder", OWN, "within_person"), "things_zeroshot": ("THINGS decoder", THINGS, "things_zeroshot"),
           "things_prior": ("THINGS as prior", PRIOR, "things_prior")}   # readout of run_rsvp_pooled -> label, colour, per-recording key
 READOUT = {"within_person": ("Own decoder (trained on the same recording)", OWN),
@@ -96,6 +98,9 @@ def main():
     tuned = json.loads((RESULTS / "rsvp_finetune.json").read_text())
     assert tuned["sessions"] == usable, f"results/rsvp_finetune.json covers {tuned['sessions']}, usable are {usable}: rerun it"
     net = lambda f, subset="all", r="ft_full_ensemble": tuned["results"][f][r][subset]["coarse8"]   # noqa: E731
+    assert (RESULTS / "rsvp_learning_curves.json").exists(), "run scripts/run_rsvp_learning_curves.py first"
+    curves = json.loads((RESULTS / "rsvp_learning_curves.json").read_text())
+    assert curves["sessions"] == usable, f"results/rsvp_learning_curves.json covers {curves['sessions']}, usable are {usable}: rerun it"
     best_net = net("0.1-30 Hz"); n_pre, n_new = tuned["image_subsets"]["pretraining_images"], tuned["image_subsets"]["never_seen"]
     mean = {r: float(np.mean([score(S[i], r)[0] for i in usable])) for r in READOUT}
     n_sig = {r: sum(score(S[i], r)[1] < 0.05 for i in usable) for r in READOUT}
@@ -112,6 +117,7 @@ def main():
     numbers["pooled"] = {f: {c: {r: pool(f, c, r)["coarse8"] for r in POOLED} for c in v} for f, v in pooled["results"].items()}
     numbers["pooled_finetuned_network"] = {f: {subset: {r: net(f, subset, r) for r in ("ft_full_ensemble", "ridge_own", "things_prior")}
                                                for subset in tuned["image_subsets"]} for f in tuned["results"]}
+    numbers["learning_curves"] = curves["results"]
     numbers["pooled_finetuned_network"].update(image_subsets=tuned["image_subsets"], seeds=tuned["seeds"],
                                                minus_things_prior=tuned["ft_full_ensemble_vs"]["0.1-30 Hz"]["things_prior"])
     print(json.dumps(numbers["mean_usable"]), "usable", usable, "drifting", drifting)
@@ -188,7 +194,7 @@ def main():
                 f"without and {net('0.1-30 Hz', 'never_seen'):+.3f} with the band-pass (own decoder on these: "
                 f"{net('none', 'never_seen', 'ridge_own'):+.3f} and {net('0.1-30 Hz', 'never_seen', 'ridge_own'):+.3f}).")
     for k, cname in enumerate(("31 channels", "10 posterior")):
-        ax = panel(fig, [0.21 + k * 0.33, (SPLIT * OLD_H + FOOT + 1.35) / NEW_H, 0.27, 2.05 / NEW_H],
+        ax = panel(fig, [0.21 + k * 0.33, (BAND + 6.05) / NEW_H, 0.27, 2.05 / NEW_H],
                    f"All {len(usable)} usable recordings together: averaged per image, one decoder on {pooled['n_images']} images" if k == 0 else " ",
                    "31 channels" if k == 0 else "10 posterior channels")
         for j, (r, (label, col, _)) in enumerate(POOLED.items()):
@@ -216,6 +222,39 @@ def main():
             ax.legend(loc="upper left", bbox_to_anchor=(-0.02, -0.165), fontsize=9.5, frameon=False, ncol=3, handletextpad=0.3,
                       columnspacing=1.4, labelcolor=INK2)
             ax.text(0, -0.36, wrap(net_note, 128), transform=ax.transAxes, fontsize=9.5, color=MUTED, va="top")
+
+    # ---------------------------------------------------------------------------------------------- the same decoders on less data
+    lc = curves["results"]["0.1-30 Hz"]; diff = lambda r, name: lc[r]["differences"][name]["mean_diff"]   # noqa: E731
+    axes = (("images", lc["training_images_all"], "Fewer images in training", "images in training"),
+            ("recordings", lc["recordings_per_image_all"], "Fewer recordings per training image", "recordings per image in training"))
+    for k, (axis, x_all, sub, xlabel) in enumerate(axes):
+        ax = panel(fig, [0.21 + k * 0.33, (BAND + 1.8) / NEW_H, 0.27, 1.9 / NEW_H],
+                   "What more data would buy: the same decoders trained on less" if k == 0 else " ", sub)
+        x = [x_all if q == "all" else float(q) for q in curves[axis]]
+        for r in ("own_decoder", "things_prior"):
+            label, col, _ = POOLED[r]
+            y = [lc[r]["grid"][q]["all"]["coarse8"] if k == 0 else lc[r]["grid"]["all"][q]["coarse8"] for q in curves[axis]]
+            null = [lc[r]["null"][q if k == 0 else "all"]["coarse8"] for q in curves[axis]]
+            ax.plot(x, null, "--", color=col, lw=1.3, zorder=2)
+            ax.plot(x, y, "-o", color=col, lw=2, ms=8, mec=SURFACE, mew=1.5, zorder=3, label=label, solid_capstyle="round")
+            ax.text(x[-1] + (x[-1] - x[0]) * 0.045, y[-1], f"{y[-1]:+.3f}", va="center", fontsize=9.5, color=INK)
+        ax.axhline(0, color=AXIS, lw=1, zorder=1); ax.set_ylim(-0.035, 0.075); ax.set_xlim(x[0] - (x[-1] - x[0]) * 0.06, x[-1] + (x[-1] - x[0]) * 0.2)
+        ax.set_xticks(x); ax.set_xticklabels(curves[axis], fontsize=10, color=MUTED); ax.set_yticks([-0.02, 0, 0.02, 0.04, 0.06])
+        ax.yaxis.grid(True, color=GRID, lw=1); ax.set_xlabel(f"{xlabel} (all = {x_all:.0f})" if k == 0 else f"{xlabel} (all = {x_all:.2f} on average)",
+                                                             fontsize=10.5, color=INK2)
+        if k == 0:
+            ax.set_ylabel("coarse8", fontsize=10.5, color=INK2)
+            ax.plot([], [], "--", color=INK2, lw=1.3, label="the same decoder with the EEG shuffled against the images")
+            ax.legend(loc="upper left", bbox_to_anchor=(-0.02, -0.27), fontsize=9.5, frameon=False, ncol=3, handletextpad=0.5,
+                      columnspacing=1.4, labelcolor=INK2)
+            ax.text(0, -0.47, wrap(
+                f"0.1-30 Hz band-pass, 31 channels. The training images are thinned at random (mean of {curves['draws']} draws); the test images "
+                f"stay at their full average. Both decoders still gain: from 100 to all images {diff('own_decoder', 'images_all_minus_100'):+.3f} "
+                f"(own decoder) and {diff('things_prior', 'images_all_minus_100'):+.3f} (THINGS as prior), from 1 to all recordings "
+                f"{diff('own_decoder', 'recordings_all_minus_1'):+.3f} and {diff('things_prior', 'recordings_all_minus_1'):+.3f}. Scoring a test "
+                f"image from one recording instead of all costs {diff('own_decoder', 'test_recordings_all_minus_1'):.3f} and "
+                f"{diff('things_prior', 'test_recordings_all_minus_1'):.3f}. A decoder without signal scores below 0 (dashed).", 128),
+                transform=ax.transAxes, fontsize=9.5, color=MUTED, va="top")
 
     # ---------------------------------------------------------------------------------------------- the clock
     big = [i for i in drifting if np.abs(drift[i][1]).max() > 500]

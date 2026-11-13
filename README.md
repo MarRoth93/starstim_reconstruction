@@ -62,6 +62,7 @@ registering new sessions does not change it.
 | `scripts/check_rsvp_timing.py` | checks the automatic timing correction of a rapid-stream block against an estimate from the images |
 | `scripts/run_rsvp_pooled.py` | one decoder on all usable rapid-stream recordings, averaged per image; with and without the band-pass and the posterior channels |
 | `scripts/run_rsvp_finetune.py` | the THINGS-pretrained pixel network on the same pooled recordings: as it is, linear probes, fine-tuning; every score also split by the network's pretraining set |
+| `scripts/run_rsvp_learning_curves.py` | the pooled own decoder and THINGS prior trained on fewer images and on fewer recordings per image, with a shuffled-EEG null |
 | `scripts/make_results_infographic.py` | infographic of the current rapid-stream results and the timing correction, drawn from the result files |
 | `scripts/link_data.py`, `scripts/build_old_lab_manifest.py` | data setup |
 
@@ -144,8 +145,8 @@ each other. Within the two image sets (144 candidates each, as in the per-record
 31 channels reaches +0.069 and +0.055. For comparison, the per-recording means are +0.022 (own decoder), +0.016 (THINGS
 zero-shot) and +0.019 (THINGS prior). Averaging the recordings is the main gain; simply stacking them into one decoder
 gives none (+0.020, one-off test). The band-pass alone, per recording, raises the THINGS readouts (zero-shot +0.013 ->
-+0.027 on five recordings) and lowers the own decoder (+0.039 -> +0.029). New recordings add repeats, not images: more
-distinct images are what the decoder lacks.
++0.027 on five recordings) and lowers the own decoder (+0.039 -> +0.029). New recordings add repeats, not images; the
+learning curves below show that the decoders gain from both.
 
 ## The THINGS-pretrained network on the pooled recordings (2026-11-12)
 
@@ -181,6 +182,44 @@ decoder sits on the pretraining images (+0.039 there, +0.004 on the never-seen o
 way round (+0.011 and +0.031). On 80 images these differences have 95% intervals of about +-0.08, so the split neither
 shows nor excludes an inflated score. The never-seen column is the one free of leakage. A clean score on all images needs
 the network pretrained again without the 262 lab images; that has not been done.
+
+## What more data would buy: learning curves (2026-11-12)
+
+`scripts/run_rsvp_learning_curves.py` trains the pooled own decoder and the linear THINGS prior on less data and scores
+them on the same test images at their full average (same folds, 31 channels; design fixed before the first run). The
+training images of every fold are thinned at random (20 draws), and every training image is averaged over fewer of its
+recordings (one recording is about 12 kept trials per image, all 3.85 are about 47). coarse8 with the 0.1-30 Hz band-pass:
+
+| Images in training (all recordings) | 25 | 50 | 100 | 150 | 200 | all (229) |
+|---|---|---|---|---|---|---|
+| Own decoder | -0.009 | +0.001 | +0.021 | +0.041 | +0.048 | +0.049 |
+| Own decoder, EEG shuffled | -0.015 | -0.019 | -0.022 | -0.019 | -0.014 | -0.013 |
+| THINGS prior | +0.038 | +0.038 | +0.043 | +0.052 | +0.058 | +0.061 |
+| THINGS prior, EEG shuffled | -0.003 | -0.004 | -0.005 | -0.005 | -0.004 | -0.005 |
+
+| Recordings per training image (all images) | 1 | 2 | 3 | all (3.85) |
+|---|---|---|---|---|
+| Own decoder | +0.023 | +0.032 | +0.043 | +0.049 |
+| THINGS prior | +0.044 | +0.049 | +0.055 | +0.061 |
+
+Both decoders gain from more images and from more recordings. From 100 to all images the own decoder gains +0.029 (95%
+interval +0.015 to +0.043) and the THINGS prior +0.017 (+0.003 to +0.031); from one to all recordings per training
+image +0.027 (+0.010 to +0.043) and +0.017 (+0.001 to +0.032). The noise in the test image counts as much: scored from
+one recording instead of all, a test image loses 0.026 (own decoder) and 0.030 (THINGS prior). At the same number of
+image x recording rows in training, 200 images with one recording against 100 images with two, the THINGS prior is
+level (+0.003, -0.003 to +0.008) and the own decoder is +0.014 higher with the 200 images (+0.004 to +0.024), of which
+about 0.008 is the difference between the two nulls. So the pooled decoders are limited by the amount of data, by
+distinct images and by trials per image about equally. The THINGS prior is still rising at the last step; the own
+decoder slows above 150 images (+0.041, +0.048, +0.049, while its null rises by 0.006), so whether it would keep
+gaining beyond 262 images is open. Without the filter the picture is the same in outline
+(`results/rsvp_learning_curves.json`).
+
+**The null is not 0.** With the EEG shuffled against the images (40 shuffles per point) the cross-validated own decoder
+scores -0.013 to -0.022 and the THINGS prior about -0.005: every out-of-fold prediction contains the mean target of its
+training fold, which is anti-correlated with the held-out images. coarse8 of a decoder fitted in image folds is therefore
+slightly too low, the own decoder's more than the THINGS prior's, and the permutation p-values (which shuffle labels
+after the fit) are, if anything, conservative for it. The zero-shot THINGS readouts are not affected. The reported
+scores are left as they are.
 
 | Step | Question | Result |
 |---|---|---|
