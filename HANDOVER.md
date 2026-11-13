@@ -34,7 +34,7 @@ definition of "usable".
 | Rapid-stream block instead of slow trials | the first lab data that decode per recording: own decoder above chance in 3 of 7 recordings (mean +0.022) | `scripts/run_rsvp_reconstruction.py` |
 | Correcting the EEG clock | in 10 of 22 sessions the EEG time stamps drift against the markers by up to 300 ms (one session by seconds). Measured from the stimulation pulses and corrected automatically. Only with it does a THINGS-trained decoder work on our data at all (E23 -0.03 -> +0.05) | `data_sessions.clock_error`, `scripts/check_rsvp_timing.py` |
 | Averaging the recordings of every image | the main gain: +0.022 per recording -> +0.041 to +0.061 on the seven recordings together. The old lab data showed the same (single trial +0.007, averaged over 6 people +0.079) | `scripts/run_rsvp_pooled.py` |
-| THINGS ridge as a prior for the lab ridge, on the pooled recordings | +0.061 with the band-pass: the best linear and leak-free number | `scripts/run_rsvp_pooled.py` |
+| THINGS ridge as a prior for the lab ridge (the lab ridge shrunk toward the THINGS decoder) | a safe default, not yet a proven gain. On the pooled recordings +0.061 with the band-pass, the highest leak-free number, but not reliably above the THINGS decoder alone (+0.047; difference +0.014, 95% interval -0.007 to +0.035). On single recordings it tracks the THINGS decoder (mean +0.019 against +0.016) and rescues the one where THINGS fails (E27, +0.039 [+0.012, +0.065]). With few training images it is below THINGS alone and passes it from about 150 images (learning curves). The THINGS decoder alone, with no lab training at all, is about as good as anything trained on our data | `scripts/run_rsvp_pooled.py`, `scripts/run_rsvp_learning_curves.py` |
 | 0.1-30 Hz band-pass on the continuous data | raises every THINGS-based readout (pooled zero-shot +0.029 -> +0.047). Mixed for the own decoder: lower per recording (+0.039 -> +0.029), higher pooled (+0.041 -> +0.049). Off by default | `load_rsvp(..., bandpass=(0.1, 30))` |
 | Fine-tuning all layers of the THINGS-pretrained pixel network on the pooled recordings | +0.079, the highest score, but not reliably above the linear readouts and not free of leakage | `scripts/run_rsvp_finetune.py` |
 
@@ -88,7 +88,9 @@ Suggestions in the order I would take them; none of them is decided.
    recording instead of all of its recordings (3.85 on average) loses 0.03. So: a new image set in every session instead
    of the two fixed sets, images that are not THINGS-EEG2 training images (then nothing can leak and the clean test set
    grows), 20 repeats rather than 5, and the same people across sessions. The curves cannot say what happens beyond 262
-   images; the own decoder's curve slows above 150.
+   images; the own decoder's curve slows above 150. On the new images, test THINGS as prior against the THINGS decoder
+   alone (prior minus THINGS, paired bootstrap over images), with the test fixed before the run: the curves suggest the
+   prior's lead grows with more lab images, but on the present 262 it is not reliable.
 2. **Confirm the timing with a photodiode**, once. It would replace the estimated display lag.
 3. **Retrain the pixel network without the lab images**, but only when there are enough new test images to see a
    difference; on the present 262 it would change no conclusion.
