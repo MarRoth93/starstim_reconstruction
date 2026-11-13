@@ -3,9 +3,11 @@ data/*
 !data/README.md
 configs/paths.local.yaml
 
-# regenerable outputs
+# regenerable intermediate files stay on each machine
 cache/
-results/
+# results/ is in git, so the results can be read without rerunning anything. Not the per-recording example figures:
+# they repeat THINGS photos, which we may not redistribute (results/sheets/ shows every reconstruction without photos)
+results/*_examples.png
 
 __pycache__/
 *.pyc

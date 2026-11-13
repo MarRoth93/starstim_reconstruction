@@ -25,7 +25,10 @@ people's EEG); the linear THINGS readouts do not have this, they are fitted with
 scored on all images, on the images of the network's pretraining set, and on the images it never saw (candidates = that
 subset; the images of its validation split are in neither). Only the never-seen score is free of leakage, and a clean
 test on all images needs a network pretrained without them.
-Output: results/rsvp_finetune.json (the scores, and ft_full_ensemble against ridge_own and things_prior by paired bootstrap).
+Output: results/rsvp_finetune.json (the scores, and ft_full_ensemble against ridge_own and things_prior by paired bootstrap)
+and, per filter, results/rsvp_finetune[_bp0.1-30]_predictions.npz: the predictions of ft_full_ensemble (the reported readout)
+with the coarse8 over all images of every image, and which images the network was pretrained on (read by
+scripts/make_reconstruction_sheets.py).
 """
 import argparse
 import json
@@ -42,7 +45,7 @@ from starstim_recon import reconstruct, things_network  # noqa: E402
 from starstim_recon.data_sessions import rsvp_usable, session_ids  # noqa: E402
 from starstim_recon.images import pixel32_many  # noqa: E402
 from starstim_recon.metrics import paired_bootstrap, score  # noqa: E402
-from starstim_recon.paths import RESULTS  # noqa: E402
+from starstim_recon.paths import RESULTS, THINGS_OBJECT_IMAGES  # noqa: E402
 from starstim_recon.readout import nested_cv, nested_prior_cv  # noqa: E402
 
 ZCA_SCALE = 1.1                                      # the THINGS lab-contract cache is ZCA-whitened x1.1
@@ -134,6 +137,12 @@ def main():
                                                   for key in subsets), flush=True)
         out["ft_full_ensemble_vs"][fname] = {ref: {key: paired_bootstrap(vals["ft_full_ensemble", key], vals[ref, key]) for key in subsets}
                                              for ref in ("ridge_own", "things_prior")}
+        RESULTS.mkdir(parents=True, exist_ok=True)
+        np.savez_compressed(RESULTS / f"rsvp_finetune{'' if bandpass is None else '_bp%g-%g' % bandpass}_predictions.npz",
+                            image=np.array([str(Path(q).relative_to(THINGS_OBJECT_IMAGES)) for q in Z["paths"]]),
+                            ft_full_ensemble=np.asarray(P["ft_full_ensemble"], np.float32).reshape(-1, 3, 32, 32),
+                            coarse8_ft_full_ensemble=vals["ft_full_ensemble", "all"],
+                            pretraining_image=np.isin(idx, subsets["pretraining_images"]), never_seen=np.isin(idx, subsets["never_seen"]))
         for ref, d in out["ft_full_ensemble_vs"][fname].items():
             print(f"  ft_full_ensemble - {ref:13s} " + " | ".join(f"{key.replace('_', ' ')} {v['mean_diff']:+.4f} [{v['ci95'][0]:+.3f}, "
                                                                       f"{v['ci95'][1]:+.3f}]" for key, v in d.items()), flush=True)

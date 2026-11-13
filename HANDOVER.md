@@ -97,9 +97,10 @@ Suggestions in the order I would take them; none of them is decided.
 
 ## Working in this repository
 
-**Start.** `README.md`, section Setup: link the data with `scripts/link_data.py`, then `--check`. `results/` and `cache/`
-are not in git, so a fresh clone has no result files. The numbers in the README come from the runs of 2026-11-09 to
-2026-11-12 on the lab workstation. To rebuild everything:
+**Start.** `README.md`, section Setup: link the data with `scripts/link_data.py`, then `--check`. `results/` is in git
+(index: `results/README.md`), so the result files and figures of the last runs come with a clone; `cache/` is not. The
+numbers in the README come from the runs of 2026-11-09 to 2026-11-13 on the lab workstation. After a rerun, commit the
+changed result files with the code that produced them. To rebuild everything:
 
 ```bash
 python scripts/make_infographic.py                                        # the three reference numbers
@@ -112,12 +113,13 @@ python scripts/run_rsvp_pooled.py
 python scripts/run_rsvp_finetune.py                                       # needs data/things_pixel_network/best.pt and a GPU
 python scripts/run_rsvp_learning_curves.py
 python scripts/make_results_infographic.py                                # results/infographic_results.png
+python scripts/make_reconstruction_sheets.py                              # results/sheets/*.png
 ```
 
 The results infographic needs the output of every line above, including the fine-tuning, so it cannot be drawn without
 the network checkpoint even though the data check treats that file as optional.
 
-**A new recording.** README, section "Add new data"; then rerun the four last lines above. The pooled input is cached in
+**A new recording.** README, section "Add new data"; then rerun the five last lines above. The pooled input is cached in
 `cache/`; it is rebuilt when the session list or the timing settings change, anything else needs `--recompute`.
 
 **Rules the code relies on.**

@@ -4,7 +4,8 @@ Low-level EEG image reconstruction (the coarse 8x8 colour layout of a viewed ima
 recordings with a StarStim 32 cap, benchmarked against THINGS-EEG2.
 
 **New to the project, person or agent? Read [`HANDOVER.md`](HANDOVER.md) first:** what was tried, what worked and what did
-not, the caveats behind the numbers, and where to continue.
+not, the caveats behind the numbers, and where to continue. **To look at the results without running anything:**
+[`results/README.md`](results/README.md), with every reconstruction as an image in [`results/sheets/`](results/sheets).
 
 ## Setup
 
@@ -67,6 +68,7 @@ registering new sessions does not change it.
 | `scripts/run_rsvp_finetune.py` | the THINGS-pretrained pixel network on the same pooled recordings: as it is, linear probes, fine-tuning; every score also split by the network's pretraining set |
 | `scripts/run_rsvp_learning_curves.py` | the pooled own decoder and THINGS prior trained on fewer images and on fewer recordings per image, with a shuffled-EEG null |
 | `scripts/make_results_infographic.py` | infographic of the current rapid-stream results and the timing correction, drawn from the result files |
+| `scripts/make_reconstruction_sheets.py` | every reconstruction as an image: one sheet per recording and per filter for the pooled recordings (`results/sheets/`) |
 | `scripts/link_data.py`, `scripts/build_old_lab_manifest.py` | data setup |
 
 ## Timing: EEG clock drift (2026-11-11)
