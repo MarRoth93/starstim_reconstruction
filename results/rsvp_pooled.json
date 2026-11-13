@@ -1,0 +1,270 @@
+{
+  "sessions": [
+    "E21",
+    "E23",
+    "E24",
+    "E25",
+    "E27",
+    "E28",
+    "E29"
+  ],
+  "results": {
+    "none": {
+      "31 channels": {
+        "own_decoder": {
+          "all": {
+            "n_examples": 262,
+            "coarse8": 0.04086650162935257,
+            "permutation_p": 0.0029985007496251873,
+            "pairwise_id": 0.5526893042028603
+          },
+          "E21+E24+E25+E27": {
+            "n_examples": 144,
+            "coarse8": 0.06088040769100189,
+            "permutation_p": 0.001999000499750125,
+            "pairwise_id": 0.5743006993006993
+          },
+          "E23+E28+E29": {
+            "n_examples": 144,
+            "coarse8": 0.0192951038479805,
+            "permutation_p": 0.1724137931034483,
+            "pairwise_id": 0.5314685314685315
+          }
+        },
+        "things_zeroshot": {
+          "all": {
+            "n_examples": 262,
+            "coarse8": 0.029218239709734917,
+            "permutation_p": 0.03648175912043978,
+            "pairwise_id": 0.5383434237079933
+          },
+          "E21+E24+E25+E27": {
+            "n_examples": 144,
+            "coarse8": 0.01108072604984045,
+            "permutation_p": 0.30684657671164417,
+            "pairwise_id": 0.519133644133644
+          },
+          "E23+E28+E29": {
+            "n_examples": 144,
+            "coarse8": 0.05280504375696182,
+            "permutation_p": 0.004997501249375313,
+            "pairwise_id": 0.5613830613830614
+          }
+        },
+        "things_prior": {
+          "all": {
+            "n_examples": 262,
+            "coarse8": 0.03951185569167137,
+            "permutation_p": 0.0034982508745627187,
+            "pairwise_id": 0.5525723143517299
+          },
+          "E21+E24+E25+E27": {
+            "n_examples": 144,
+            "coarse8": 0.03196483105421066,
+            "permutation_p": 0.05997001499250375,
+            "pairwise_id": 0.5421037296037297
+          },
+          "E23+E28+E29": {
+            "n_examples": 144,
+            "coarse8": 0.0508723258972168,
+            "permutation_p": 0.009995002498750625,
+            "pairwise_id": 0.5636655011655012
+          }
+        }
+      },
+      "10 posterior": {
+        "own_decoder": {
+          "all": {
+            "n_examples": 262,
+            "coarse8": 0.046086132526397705,
+            "permutation_p": 0.0009995002498750624,
+            "pairwise_id": 0.5528647889795559
+          },
+          "E21+E24+E25+E27": {
+            "n_examples": 144,
+            "coarse8": 0.04208848252892494,
+            "permutation_p": 0.02948525737131434,
+            "pairwise_id": 0.5420066045066044
+          },
+          "E23+E28+E29": {
+            "n_examples": 144,
+            "coarse8": 0.04308329522609711,
+            "permutation_p": 0.021989005497251374,
+            "pairwise_id": 0.5558954933954934
+          }
+        },
+        "things_zeroshot": {
+          "all": {
+            "n_examples": 262,
+            "coarse8": 0.03656310960650444,
+            "permutation_p": 0.015492253873063468,
+            "pairwise_id": 0.5383580474393848
+          },
+          "E21+E24+E25+E27": {
+            "n_examples": 144,
+            "coarse8": 0.013481872156262398,
+            "permutation_p": 0.30134932533733133,
+            "pairwise_id": 0.5143259518259519
+          },
+          "E23+E28+E29": {
+            "n_examples": 144,
+            "coarse8": 0.05602436512708664,
+            "permutation_p": 0.004997501249375313,
+            "pairwise_id": 0.5590520590520591
+          }
+        },
+        "things_prior": {
+          "all": {
+            "n_examples": 262,
+            "coarse8": 0.050267256796360016,
+            "permutation_p": 0.0004997501249375312,
+            "pairwise_id": 0.5528647889795559
+          },
+          "E21+E24+E25+E27": {
+            "n_examples": 144,
+            "coarse8": 0.03486449643969536,
+            "permutation_p": 0.05697151424287856,
+            "pairwise_id": 0.5345279720279721
+          },
+          "E23+E28+E29": {
+            "n_examples": 144,
+            "coarse8": 0.06387480348348618,
+            "permutation_p": 0.0034982508745627187,
+            "pairwise_id": 0.5659479409479409
+          }
+        }
+      }
+    },
+    "0.1-30 Hz": {
+      "31 channels": {
+        "own_decoder": {
+          "all": {
+            "n_examples": 262,
+            "coarse8": 0.04934533312916756,
+            "permutation_p": 0.0014992503748125937,
+            "pairwise_id": 0.5633938755812933
+          },
+          "E21+E24+E25+E27": {
+            "n_examples": 144,
+            "coarse8": 0.05442289263010025,
+            "permutation_p": 0.004997501249375313,
+            "pairwise_id": 0.5641511266511267
+          },
+          "E23+E28+E29": {
+            "n_examples": 144,
+            "coarse8": 0.047022148966789246,
+            "permutation_p": 0.013493253373313344,
+            "pairwise_id": 0.5669677544677545
+          }
+        },
+        "things_zeroshot": {
+          "all": {
+            "n_examples": 262,
+            "coarse8": 0.04652128368616104,
+            "permutation_p": 0.0014992503748125937,
+            "pairwise_id": 0.5504080021058173
+          },
+          "E21+E24+E25+E27": {
+            "n_examples": 144,
+            "coarse8": 0.03561633825302124,
+            "permutation_p": 0.04697651174412794,
+            "pairwise_id": 0.5428321678321679
+          },
+          "E23+E28+E29": {
+            "n_examples": 144,
+            "coarse8": 0.05377056077122688,
+            "permutation_p": 0.006496751624187906,
+            "pairwise_id": 0.5520104895104895
+          }
+        },
+        "things_prior": {
+          "all": {
+            "n_examples": 262,
+            "coarse8": 0.060523152351379395,
+            "permutation_p": 0.0004997501249375312,
+            "pairwise_id": 0.5675762627592057
+          },
+          "E21+E24+E25+E27": {
+            "n_examples": 144,
+            "coarse8": 0.06885223835706711,
+            "permutation_p": 0.0004997501249375312,
+            "pairwise_id": 0.581973581973582
+          },
+          "E23+E28+E29": {
+            "n_examples": 144,
+            "coarse8": 0.05458075553178787,
+            "permutation_p": 0.0069965017491254375,
+            "pairwise_id": 0.5556526806526807
+          }
+        }
+      },
+      "10 posterior": {
+        "own_decoder": {
+          "all": {
+            "n_examples": 262,
+            "coarse8": 0.03952717408537865,
+            "permutation_p": 0.004997501249375313,
+            "pairwise_id": 0.5415898920768624
+          },
+          "E21+E24+E25+E27": {
+            "n_examples": 144,
+            "coarse8": 0.03503778576850891,
+            "permutation_p": 0.05647176411794103,
+            "pairwise_id": 0.5262237762237763
+          },
+          "E23+E28+E29": {
+            "n_examples": 144,
+            "coarse8": 0.03930247575044632,
+            "permutation_p": 0.025987006496751622,
+            "pairwise_id": 0.550553613053613
+          }
+        },
+        "things_zeroshot": {
+          "all": {
+            "n_examples": 262,
+            "coarse8": 0.0638977512717247,
+            "permutation_p": 0.0009995002498750624,
+            "pairwise_id": 0.5708227311280746
+          },
+          "E21+E24+E25+E27": {
+            "n_examples": 144,
+            "coarse8": 0.043709561228752136,
+            "permutation_p": 0.031484257871064465,
+            "pairwise_id": 0.5531759906759908
+          },
+          "E23+E28+E29": {
+            "n_examples": 144,
+            "coarse8": 0.07344886660575867,
+            "permutation_p": 0.0004997501249375312,
+            "pairwise_id": 0.5789141414141414
+          }
+        },
+        "things_prior": {
+          "all": {
+            "n_examples": 262,
+            "coarse8": 0.06241114065051079,
+            "permutation_p": 0.0009995002498750624,
+            "pairwise_id": 0.5613319294551198
+          },
+          "E21+E24+E25+E27": {
+            "n_examples": 144,
+            "coarse8": 0.04997863620519638,
+            "permutation_p": 0.014992503748125937,
+            "pairwise_id": 0.546571484071484
+          },
+          "E23+E28+E29": {
+            "n_examples": 144,
+            "coarse8": 0.0672311931848526,
+            "permutation_p": 0.001999000499750125,
+            "pairwise_id": 0.5713383838383839
+          }
+        }
+      }
+    }
+  },
+  "n_images": 262,
+  "image_sets": {
+    "E21+E24+E25+E27": 144,
+    "E23+E28+E29": 144
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "things": {
+    "n_images": 200,
+    "coarse8": 0.4404
+  },
+  "old": {
+    "n_images": 128,
+    "coarse8": 0.0789
+  },
+  "new": {
+    "n_images": 283,
+    "coarse8": -0.0111
+  }
+}

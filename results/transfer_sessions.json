@@ -1,0 +1,209 @@
+{
+  "alpha": 100.0,
+  "results": {
+    "pulse_free/E06": {
+      "n_images": 10,
+      "coarse8": 0.14130708575248718,
+      "permutation_p": 0.0655868826234753,
+      "pairwise_id": 0.6222222222222221
+    },
+    "pulse_free/E07": {
+      "n_images": 10,
+      "coarse8": -0.07590098679065704,
+      "permutation_p": 0.858628274345131,
+      "pairwise_id": 0.4222222222222222
+    },
+    "pulse_free/E08": {
+      "n_images": 12,
+      "coarse8": -0.040692027658224106,
+      "permutation_p": 0.7524495100979804,
+      "pairwise_id": 0.4393939393939393
+    },
+    "pulse_free/E09": {
+      "n_images": 12,
+      "coarse8": -0.012096614576876163,
+      "permutation_p": 0.615876824635073,
+      "pairwise_id": 0.44696969696969696
+    },
+    "pulse_free/E10": {
+      "n_images": 12,
+      "coarse8": -0.09446211904287338,
+      "permutation_p": 0.9426114777044591,
+      "pairwise_id": 0.356060606060606
+    },
+    "pulse_free/E11": {
+      "n_images": 12,
+      "coarse8": 0.026192763820290565,
+      "permutation_p": 0.4913017396520696,
+      "pairwise_id": 0.4621212121212121
+    },
+    "pulse_free/E12": {
+      "n_images": 12,
+      "coarse8": 0.08130786567926407,
+      "permutation_p": 0.09298140371925614,
+      "pairwise_id": 0.5757575757575758
+    },
+    "pulse_free/E13": {
+      "n_images": 11,
+      "coarse8": 0.04293075576424599,
+      "permutation_p": 0.1875624875024995,
+      "pairwise_id": 0.5636363636363636
+    },
+    "pulse_free/E14": {
+      "n_images": 24,
+      "coarse8": 0.001969302771613002,
+      "permutation_p": 0.5268946210757849,
+      "pairwise_id": 0.5235507246376812
+    },
+    "pulse_free/E15": {
+      "n_images": 24,
+      "coarse8": -0.0005508186295628548,
+      "permutation_p": 0.5280943811237753,
+      "pairwise_id": 0.4836956521739131
+    },
+    "pulse_free/E16": {
+      "n_images": 24,
+      "coarse8": 0.016292953863739967,
+      "permutation_p": 0.386122775444911,
+      "pairwise_id": 0.5054347826086957
+    },
+    "pulse_free/E17": {
+      "n_images": 32,
+      "coarse8": -0.03764521703124046,
+      "permutation_p": 0.7334533093381324,
+      "pairwise_id": 0.4848790322580645
+    },
+    "pulse_free/E18": {
+      "n_images": 24,
+      "coarse8": 0.06101507321000099,
+      "permutation_p": 0.09158168366326734,
+      "pairwise_id": 0.5452898550724639
+    },
+    "pulse_free/E19": {
+      "n_images": 32,
+      "coarse8": -0.06706107407808304,
+      "permutation_p": 0.9030193961207759,
+      "pairwise_id": 0.4274193548387097
+    },
+    "pulse_free/E20": {
+      "n_images": 32,
+      "coarse8": -0.07247738540172577,
+      "permutation_p": 0.9496100779844031,
+      "pairwise_id": 0.4264112903225806
+    },
+    "pulse_free/E21": {
+      "n_images": 28,
+      "coarse8": -0.038526542484760284,
+      "permutation_p": 0.8354329134173165,
+      "pairwise_id": 0.47354497354497355
+    },
+    "pulse_free/pooled": {
+      "n_images": 311,
+      "coarse8": -0.013536614365875721,
+      "permutation_p": 0.8482303539292142,
+      "pairwise_id": 0.4806988877575097
+    },
+    "all_nopulse/E06": {
+      "n_images": 10,
+      "coarse8": 0.03481494262814522,
+      "permutation_p": 0.22675464907018597,
+      "pairwise_id": 0.5222222222222223
+    },
+    "all_nopulse/E07": {
+      "n_images": 10,
+      "coarse8": -0.16532838344573975,
+      "permutation_p": 0.9852029594081184,
+      "pairwise_id": 0.2333333333333333
+    },
+    "all_nopulse/E08": {
+      "n_images": 12,
+      "coarse8": -0.07589967548847198,
+      "permutation_p": 0.9130173965206959,
+      "pairwise_id": 0.40151515151515144
+    },
+    "all_nopulse/E09": {
+      "n_images": 12,
+      "coarse8": -0.05082857608795166,
+      "permutation_p": 0.8002399520095981,
+      "pairwise_id": 0.4166666666666667
+    },
+    "all_nopulse/E10": {
+      "n_images": 12,
+      "coarse8": -0.10693445801734924,
+      "permutation_p": 0.9882023595280944,
+      "pairwise_id": 0.34848484848484845
+    },
+    "all_nopulse/E11": {
+      "n_images": 12,
+      "coarse8": -0.0128302201628685,
+      "permutation_p": 0.7546490701859628,
+      "pairwise_id": 0.45454545454545453
+    },
+    "all_nopulse/E12": {
+      "n_images": 12,
+      "coarse8": 0.06321732699871063,
+      "permutation_p": 0.0615876824635073,
+      "pairwise_id": 0.537878787878788
+    },
+    "all_nopulse/E13": {
+      "n_images": 12,
+      "coarse8": -0.004665026906877756,
+      "permutation_p": 0.4911017796440712,
+      "pairwise_id": 0.49242424242424243
+    },
+    "all_nopulse/E14": {
+      "n_images": 24,
+      "coarse8": 0.004155442118644714,
+      "permutation_p": 0.4751049790041992,
+      "pairwise_id": 0.5126811594202898
+    },
+    "all_nopulse/E15": {
+      "n_images": 24,
+      "coarse8": -0.005025550723075867,
+      "permutation_p": 0.5566886622675465,
+      "pairwise_id": 0.45652173913043476
+    },
+    "all_nopulse/E16": {
+      "n_images": 34,
+      "coarse8": 0.031186096370220184,
+      "permutation_p": 0.2393521295740852,
+      "pairwise_id": 0.5231729055258467
+    },
+    "all_nopulse/E17": {
+      "n_images": 52,
+      "coarse8": 0.005604473873972893,
+      "permutation_p": 0.38912217556488704,
+      "pairwise_id": 0.5226244343891402
+    },
+    "all_nopulse/E18": {
+      "n_images": 24,
+      "coarse8": 0.06101507321000099,
+      "permutation_p": 0.09158168366326734,
+      "pairwise_id": 0.5452898550724639
+    },
+    "all_nopulse/E19": {
+      "n_images": 47,
+      "coarse8": -0.03239825367927551,
+      "permutation_p": 0.8252349530093981,
+      "pairwise_id": 0.4514338575393155
+    },
+    "all_nopulse/E20": {
+      "n_images": 79,
+      "coarse8": -0.05441395938396454,
+      "permutation_p": 0.979004199160168,
+      "pairwise_id": 0.43541058098020125
+    },
+    "all_nopulse/E21": {
+      "n_images": 74,
+      "coarse8": 0.040331270545721054,
+      "permutation_p": 0.08178364327134573,
+      "pairwise_id": 0.5423917067752684
+    },
+    "all_nopulse/pooled": {
+      "n_images": 450,
+      "coarse8": -0.008004643023014069,
+      "permutation_p": 0.8174365126974605,
+      "pairwise_id": 0.4809727251999146
+    }
+  }
+}

@@ -1,0 +1,688 @@
+{
+  "sessions": [
+    "E21",
+    "E23",
+    "E24",
+    "E25",
+    "E27",
+    "E28",
+    "E29"
+  ],
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "results": {
+    "none": {
+      "ridge_own": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.04086650162935257,
+          "permutation_p": 0.0029985007496251873,
+          "pairwise_id": 0.5526893042028603
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.042652152478694916,
+          "permutation_p": 0.01199400299850075,
+          "pairwise_id": 0.5525272214007259
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.04846954345703125,
+          "permutation_p": 0.04897551224387806,
+          "pairwise_id": 0.5590189873417721
+        }
+      },
+      "things_prior": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.03951185569167137,
+          "permutation_p": 0.0034982508745627187,
+          "pairwise_id": 0.5525723143517299
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.04556593671441078,
+          "permutation_p": 0.008995502248875561,
+          "pairwise_id": 0.5585764215620379
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.027508188039064407,
+          "permutation_p": 0.15442278860569716,
+          "pairwise_id": 0.536867088607595
+        }
+      },
+      "net_zeroshot": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.014369855634868145,
+          "permutation_p": 0.15442278860569716,
+          "pairwise_id": 0.511728232575824
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.02191067487001419,
+          "permutation_p": 0.06896551724137931,
+          "pairwise_id": 0.5182820271541874
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.00424128957092762,
+          "permutation_p": 0.5227386306846576,
+          "pairwise_id": 0.4996835443037975
+        }
+      },
+      "probe_hidden": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": -0.017018133774399757,
+          "permutation_p": 0.8575712143928036,
+          "pairwise_id": 0.4853323974145243
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": -0.028016669675707817,
+          "permutation_p": 0.9205397301349325,
+          "pairwise_id": 0.47079580588788805
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.007227315567433834,
+          "permutation_p": 0.4207896051974013,
+          "pairwise_id": 0.5113924050632912
+        }
+      },
+      "probe_temporal": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.05812983214855194,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5640811909566844
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.0849790945649147,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5931240758166421
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.00786120630800724,
+          "permutation_p": 0.4917541229385307,
+          "pairwise_id": 0.5
+        }
+      },
+      "ft_adapter": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.01649877242743969,
+          "permutation_p": 0.0734632683658171,
+          "pairwise_id": 0.507121757187564
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.021184973418712616,
+          "permutation_p": 0.04897551224387806,
+          "pairwise_id": 0.5139467670385804
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.008613918907940388,
+          "permutation_p": 0.4337831084457771,
+          "pairwise_id": 0.4908227848101266
+        }
+      },
+      "ft_temporal": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.04128022864460945,
+          "permutation_p": 0.01699150424787606,
+          "pairwise_id": 0.5354040536983417
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.03885340690612793,
+          "permutation_p": 0.031984007996002,
+          "pairwise_id": 0.5376394676703858
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.06254281103610992,
+          "permutation_p": 0.03648175912043978,
+          "pairwise_id": 0.5444620253164557
+        }
+      },
+      "ft_full_seed0": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.05649980902671814,
+          "permutation_p": 0.0024987506246876563,
+          "pairwise_id": 0.5461232488081659
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.05522483214735985,
+          "permutation_p": 0.0069965017491254375,
+          "pairwise_id": 0.5460411345610968
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.07680948823690414,
+          "permutation_p": 0.015492253873063468,
+          "pairwise_id": 0.5604430379746835
+        }
+      },
+      "ft_full_seed1": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.05524769797921181,
+          "permutation_p": 0.0029985007496251873,
+          "pairwise_id": 0.543754204322775
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.05262443795800209,
+          "permutation_p": 0.009495252373813094,
+          "pairwise_id": 0.5427140744723753
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.0779966413974762,
+          "permutation_p": 0.014492753623188406,
+          "pairwise_id": 0.5585443037974683
+        }
+      },
+      "ft_full_seed2": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.055197086185216904,
+          "permutation_p": 0.0034982508745627187,
+          "pairwise_id": 0.5439443128308619
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.05396309867501259,
+          "permutation_p": 0.0079960019990005,
+          "pairwise_id": 0.5431845678182552
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.07830123603343964,
+          "permutation_p": 0.015992003998001,
+          "pairwise_id": 0.5588607594936709
+        }
+      },
+      "ft_full_seed3": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.05750999599695206,
+          "permutation_p": 0.001999000499750125,
+          "pairwise_id": 0.5456552894036443
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.055026423186063766,
+          "permutation_p": 0.0074962518740629685,
+          "pairwise_id": 0.5443608011829547
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.08248510211706161,
+          "permutation_p": 0.012993503248375811,
+          "pairwise_id": 0.5632911392405063
+        }
+      },
+      "ft_full_seed4": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.056265197694301605,
+          "permutation_p": 0.0024987506246876563,
+          "pairwise_id": 0.5441197976075576
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.053259655833244324,
+          "permutation_p": 0.008995502248875561,
+          "pairwise_id": 0.5426132544696868
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.08045400679111481,
+          "permutation_p": 0.012993503248375811,
+          "pairwise_id": 0.5601265822784811
+        }
+      },
+      "ft_full_ensemble": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.0562172457575798,
+          "permutation_p": 0.0024987506246876563,
+          "pairwise_id": 0.5445877570120791
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.054022375494241714,
+          "permutation_p": 0.0074962518740629685,
+          "pairwise_id": 0.5434534211587579
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.0793745294213295,
+          "permutation_p": 0.014492753623188406,
+          "pairwise_id": 0.5604430379746835
+        }
+      },
+      "ft_full_rec": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.03634940832853317,
+          "permutation_p": 0.038980509745127435,
+          "pairwise_id": 0.532903395630429
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.04154358431696892,
+          "permutation_p": 0.041979010494752625,
+          "pairwise_id": 0.5395214410539051
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.04010013863444328,
+          "permutation_p": 0.1629185407296352,
+          "pairwise_id": 0.525
+        }
+      }
+    },
+    "0.1-30 Hz": {
+      "ridge_own": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.04934533312916756,
+          "permutation_p": 0.0014992503748125937,
+          "pairwise_id": 0.5633938755812933
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.052250515669584274,
+          "permutation_p": 0.001999000499750125,
+          "pairwise_id": 0.5668772684500606
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.057002484798431396,
+          "permutation_p": 0.020989505247376312,
+          "pairwise_id": 0.5675632911392405
+        }
+      },
+      "things_prior": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.060523152351379395,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5675762627592057
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.07003632932901382,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5755477886812744
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.05324171110987663,
+          "permutation_p": 0.026986506746626688,
+          "pairwise_id": 0.5582278481012659
+        }
+      },
+      "net_zeroshot": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.02771884948015213,
+          "permutation_p": 0.005997001499250375,
+          "pairwise_id": 0.5227837735076483
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.03786200284957886,
+          "permutation_p": 0.004997501249375313,
+          "pairwise_id": 0.530884527490254
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.011211469769477844,
+          "permutation_p": 0.3353323338330835,
+          "pairwise_id": 0.5080696202531646
+        }
+      },
+      "probe_hidden": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": -0.01650647073984146,
+          "permutation_p": 0.8610694652673663,
+          "pairwise_id": 0.49360942938200114
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": -0.03111611306667328,
+          "permutation_p": 0.9495252373813093,
+          "pairwise_id": 0.4730810592821616
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.025171075016260147,
+          "permutation_p": 0.2013993003498251,
+          "pairwise_id": 0.5287974683544304
+        }
+      },
+      "probe_temporal": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.06654582172632217,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5779298645842473
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.07199830561876297,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5880830756822154
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.06805562973022461,
+          "permutation_p": 0.009995002498750625,
+          "pairwise_id": 0.5754746835443039
+        }
+      },
+      "ft_adapter": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.029956026002764702,
+          "permutation_p": 0.001999000499750125,
+          "pairwise_id": 0.5217747360416484
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.03002363257110119,
+          "permutation_p": 0.018490754622688656,
+          "pairwise_id": 0.5205672805484607
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.025189926847815514,
+          "permutation_p": 0.12243878060969515,
+          "pairwise_id": 0.5050632911392405
+        }
+      },
+      "ft_temporal": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.04749636724591255,
+          "permutation_p": 0.0074962518740629685,
+          "pairwise_id": 0.5399374104296453
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.061251476407051086,
+          "permutation_p": 0.005497251374312844,
+          "pairwise_id": 0.5554846081462562
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.0265949759632349,
+          "permutation_p": 0.272863568215892,
+          "pairwise_id": 0.5143987341772153
+        }
+      },
+      "ft_full_seed0": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.07737994194030762,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5644614079728584
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.09190975874662399,
+          "permutation_p": 0.0009995002498750624,
+          "pairwise_id": 0.5817986288479634
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.054784975945949554,
+          "permutation_p": 0.07396301849075462,
+          "pairwise_id": 0.5346518987341773
+        }
+      },
+      "ft_full_seed1": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.08439306169748306,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5724459653125091
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.09495223313570023,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5859658556257562
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.06927427649497986,
+          "permutation_p": 0.030484757621189407,
+          "pairwise_id": 0.5563291139240507
+        }
+      },
+      "ft_full_seed2": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.0794074684381485,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5680588458951186
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.09043455868959427,
+          "permutation_p": 0.0009995002498750624,
+          "pairwise_id": 0.581899448850652
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.061819206923246384,
+          "permutation_p": 0.05147426286856572,
+          "pairwise_id": 0.5441455696202532
+        }
+      },
+      "ft_full_seed3": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.07584988325834274,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5622824719955544
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.08523162454366684,
+          "permutation_p": 0.0009995002498750624,
+          "pairwise_id": 0.5748756553300175
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.05918775126338005,
+          "permutation_p": 0.05547226386806597,
+          "pairwise_id": 0.5412974683544304
+        }
+      },
+      "ft_full_seed4": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.07788360863924026,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.567298411862771
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.08903629332780838,
+          "permutation_p": 0.0009995002498750624,
+          "pairwise_id": 0.5821346955235919
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.05830411985516548,
+          "permutation_p": 0.059470264867566215,
+          "pairwise_id": 0.5346518987341773
+        }
+      },
+      "ft_full_ensemble": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.07948443293571472,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5676786288789447
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.0908002033829689,
+          "permutation_p": 0.0009995002498750624,
+          "pairwise_id": 0.5820002688533404
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.06109017878770828,
+          "permutation_p": 0.05247376311844078,
+          "pairwise_id": 0.5408227848101266
+        }
+      },
+      "ft_full_rec": {
+        "all": {
+          "n_examples": 262,
+          "coarse8": 0.049144767224788666,
+          "permutation_p": 0.0079960019990005,
+          "pairwise_id": 0.5390307390833845
+        },
+        "pretraining_images": {
+          "n_examples": 173,
+          "coarse8": 0.06903711706399918,
+          "permutation_p": 0.001999000499750125,
+          "pairwise_id": 0.562004301653448
+        },
+        "never_seen": {
+          "n_examples": 80,
+          "coarse8": 0.028590228408575058,
+          "permutation_p": 0.2673663168415792,
+          "pairwise_id": 0.5183544303797468
+        }
+      }
+    }
+  },
+  "ft_full_ensemble_vs": {
+    "none": {
+      "ridge_own": {
+        "all": {
+          "mean_diff": 0.015350738540291786,
+          "ci95": [
+            -0.03142590476199984,
+            0.06023292457684871
+          ]
+        },
+        "pretraining_images": {
+          "mean_diff": 0.011370225809514523,
+          "ci95": [
+            -0.04345687357708812,
+            0.06639452073723073
+          ]
+        },
+        "never_seen": {
+          "mean_diff": 0.030904989689588547,
+          "ci95": [
+            -0.04904001895338297,
+            0.11202874481678007
+          ]
+        }
+      },
+      "things_prior": {
+        "all": {
+          "mean_diff": 0.016705388203263283,
+          "ci95": [
+            -0.026870994502678512,
+            0.05885177059099077
+          ]
+        },
+        "pretraining_images": {
+          "mean_diff": 0.00845643412321806,
+          "ci95": [
+            -0.04498405866324902,
+            0.060858648270368555
+          ]
+        },
+        "never_seen": {
+          "mean_diff": 0.05186634138226509,
+          "ci95": [
+            -0.01730532138608396,
+            0.11900051813572644
+          ]
+        }
+      }
+    },
+    "0.1-30 Hz": {
+      "ridge_own": {
+        "all": {
+          "mean_diff": 0.030139101669192314,
+          "ci95": [
+            -0.01636377773247659,
+            0.07495362553745508
+          ]
+        },
+        "pretraining_images": {
+          "mean_diff": 0.038549695163965225,
+          "ci95": [
+            -0.016762148588895798,
+            0.09301851224154231
+          ]
+        },
+        "never_seen": {
+          "mean_diff": 0.004087701439857483,
+          "ci95": [
+            -0.07369853761047125,
+            0.08078642915934318
+          ]
+        }
+      },
+      "things_prior": {
+        "all": {
+          "mean_diff": 0.018961280584335327,
+          "ci95": [
+            -0.023793923528864978,
+            0.061027170624583925
+          ]
+        },
+        "pretraining_images": {
+          "mean_diff": 0.020763879641890526,
+          "ci95": [
+            -0.03169494708999991,
+            0.07173996735364198
+          ]
+        },
+        "never_seen": {
+          "mean_diff": 0.007848466746509075,
+          "ci95": [
+            -0.06398093868046999,
+            0.08119458649307489
+          ]
+        }
+      }
+    }
+  },
+  "n_images": 262,
+  "image_subsets": {
+    "all": 262,
+    "pretraining_images": 173,
+    "never_seen": 80
+  }
+}
