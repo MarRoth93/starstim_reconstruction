@@ -3,6 +3,9 @@
 Low-level EEG image reconstruction (the coarse 8x8 colour layout of a viewed image; no detail, no semantics) for
 recordings with a StarStim 32 cap, benchmarked against THINGS-EEG2.
 
+**New to the project, person or agent? Read [`HANDOVER.md`](HANDOVER.md) first:** what was tried, what worked and what did
+not, the caveats behind the numbers, and where to continue.
+
 ## Setup
 
 ```bash
