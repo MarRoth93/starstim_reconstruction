@@ -165,9 +165,7 @@ def main():
             ax.text(x, v + (0.003 if v >= 0 else -0.003), f"{v:+.3f}" + ("*" if p < 0.05 and S[i]["usable"] else ""), ha="center",
                     va="bottom" if v >= 0 else "top", rotation=90, fontsize=8.5, color=INK if S[i]["usable"] else MUTED)
     ax.axhline(0, color=AXIS, lw=1, zorder=2)
-    ax.axhline(ref["old"]["coarse8"], color=MUTED, lw=1, zorder=1)
-    ax.text(len(ids) - 0.45, ref["old"]["coarse8"] + 0.003, f"old lab data, 6 people pooled: {ref['old']['coarse8']:+.3f}", ha="right",
-            fontsize=9.5, color=INK2)
+    ax.axhline(ref["old"]["coarse8"], color=MUTED, lw=1, zorder=1, label=f"old lab data, 6 people pooled ({ref['old']['coarse8']:+.3f})")
     ax.set_xticks(range(len(ids)))
     ax.set_xticklabels([f"{i}\n{S[i]['j']['n_images']} x {S[i]['j']['repeats'][1]}" if S[i]["usable"] else f"{i}\nnot usable"
                         for i in ids], fontsize=10, color=INK2)

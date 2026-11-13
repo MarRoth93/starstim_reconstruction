@@ -6,8 +6,8 @@ the scripts in `scripts/` on the lab workstation; how they were made, and what t
 
 **What is reconstructed:** the coarse 8x8 colour layout of a viewed image, from StarStim 32 EEG. **Score:** coarse8, the
 correlation of the reconstructed layout with the true one relative to the other candidate images (0 = chance, 1 =
-perfect). THINGS-EEG2 reaches +0.44 on the same task; our best is about +0.06 to +0.08 (all usable recordings averaged
-per image).
+perfect). THINGS-EEG2 reaches +0.44 on the same task; our best is about +0.07 to +0.09 (all eight usable recordings
+averaged per image).
 
 ## Where to look first
 
@@ -17,13 +17,13 @@ per image).
 
 | Sheet | Images | Decoders |
 |---|---|---|
-| [`sheets/all_recordings_bp0.1-30.png`](sheets/all_recordings_bp0.1-30.png) | the 262 images of the 7 usable recordings, averaged over their recordings, 0.1-30 Hz band-pass | own decoder, THINGS decoder, THINGS as prior, fine-tuned network |
+| [`sheets/all_recordings_bp0.1-30.png`](sheets/all_recordings_bp0.1-30.png) | the 262 images of the 8 usable recordings, averaged over their recordings, 0.1-30 Hz band-pass | own decoder, THINGS decoder, THINGS as prior, fine-tuned network |
 | [`sheets/all_recordings.png`](sheets/all_recordings.png) | the same without the band-pass | the same |
-| `sheets/rsvp_E21.png` ... `sheets/rsvp_E29.png` | the 144 images of one recording, decoded from that recording alone | own decoder, THINGS decoder, THINGS as prior, old-lab decoder |
+| `sheets/rsvp_E21.png` ... `sheets/rsvp_E31.png` | the 144 images of one recording, decoded from that recording alone | own decoder, THINGS decoder, THINGS as prior, old-lab decoder |
 
 E26 is not usable (its timing could not be verified); its sheet is there and says so. The fine-tuned network was
 pretrained on 173 of the 262 images (marked * on the sheet), so its score on those is not free of leakage; on the 80
-images it never saw it scores +0.061 with the band-pass, level with the own decoder (+0.057).
+images it never saw it scores +0.066 with the band-pass, level with the linear THINGS prior (+0.069).
 
 ## The files
 

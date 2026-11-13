@@ -6,7 +6,8 @@
     "E25",
     "E27",
     "E28",
-    "E29"
+    "E29",
+    "E31"
   ],
   "seeds": [
     0,
@@ -20,281 +21,281 @@
       "ridge_own": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.04086650162935257,
-          "permutation_p": 0.0029985007496251873,
-          "pairwise_id": 0.5526893042028603
+          "coarse8": 0.04823126643896103,
+          "permutation_p": 0.0014992503748125937,
+          "pairwise_id": 0.5564329794390337
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.042652152478694916,
-          "permutation_p": 0.01199400299850075,
-          "pairwise_id": 0.5525272214007259
+          "coarse8": 0.05408412590622902,
+          "permutation_p": 0.001999000499750125,
+          "pairwise_id": 0.5622731549939508
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.04846954345703125,
-          "permutation_p": 0.04897551224387806,
-          "pairwise_id": 0.5590189873417721
+          "coarse8": 0.04535344988107681,
+          "permutation_p": 0.05147426286856572,
+          "pairwise_id": 0.5539556962025317
         }
       },
       "things_prior": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.03951185569167137,
-          "permutation_p": 0.0034982508745627187,
-          "pairwise_id": 0.5525723143517299
+          "coarse8": 0.041574299335479736,
+          "permutation_p": 0.006496751624187906,
+          "pairwise_id": 0.5548682401801643
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.04556593671441078,
-          "permutation_p": 0.008995502248875561,
-          "pairwise_id": 0.5585764215620379
+          "coarse8": 0.04190623387694359,
+          "permutation_p": 0.013493253373313344,
+          "pairwise_id": 0.5543419814491195
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.027508188039064407,
-          "permutation_p": 0.15442278860569716,
-          "pairwise_id": 0.536867088607595
+          "coarse8": 0.04146403819322586,
+          "permutation_p": 0.05697151424287856,
+          "pairwise_id": 0.5596518987341772
         }
       },
       "net_zeroshot": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.014369855634868145,
-          "permutation_p": 0.15442278860569716,
-          "pairwise_id": 0.511728232575824
+          "coarse8": 0.016855956986546516,
+          "permutation_p": 0.0879560219890055,
+          "pairwise_id": 0.5140387821356498
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.02191067487001419,
-          "permutation_p": 0.06896551724137931,
-          "pairwise_id": 0.5182820271541874
+          "coarse8": 0.022030256688594818,
+          "permutation_p": 0.06796601699150424,
+          "pairwise_id": 0.5184500604920017
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.00424128957092762,
-          "permutation_p": 0.5227386306846576,
-          "pairwise_id": 0.4996835443037975
+          "coarse8": 0.009867506101727486,
+          "permutation_p": 0.37031484257871067,
+          "pairwise_id": 0.5063291139240507
         }
       },
       "probe_hidden": {
         "all": {
           "n_examples": 262,
-          "coarse8": -0.017018133774399757,
-          "permutation_p": 0.8575712143928036,
-          "pairwise_id": 0.4853323974145243
+          "coarse8": 0.005038355011492968,
+          "permutation_p": 0.35582208895552225,
+          "pairwise_id": 0.5079114386826943
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": -0.028016669675707817,
-          "permutation_p": 0.9205397301349325,
-          "pairwise_id": 0.47079580588788805
+          "coarse8": -0.007838649675250053,
+          "permutation_p": 0.6761619190404797,
+          "pairwise_id": 0.4925729264686114
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.007227315567433834,
-          "permutation_p": 0.4207896051974013,
-          "pairwise_id": 0.5113924050632912
+          "coarse8": 0.04482763260602951,
+          "permutation_p": 0.049475262368815595,
+          "pairwise_id": 0.5556962025316455
         }
       },
       "probe_temporal": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.05812983214855194,
+          "coarse8": 0.06674513220787048,
           "permutation_p": 0.0004997501249375312,
-          "pairwise_id": 0.5640811909566844
+          "pairwise_id": 0.5723728466555527
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.0849790945649147,
+          "coarse8": 0.08909609913825989,
           "permutation_p": 0.0004997501249375312,
-          "pairwise_id": 0.5931240758166421
+          "pairwise_id": 0.6037101760989381
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.00786120630800724,
-          "permutation_p": 0.4917541229385307,
-          "pairwise_id": 0.5
+          "coarse8": 0.03708241134881973,
+          "permutation_p": 0.111944027986007,
+          "pairwise_id": 0.5294303797468355
         }
       },
       "ft_adapter": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.01649877242743969,
-          "permutation_p": 0.0734632683658171,
-          "pairwise_id": 0.507121757187564
+          "coarse8": 0.016548192128539085,
+          "permutation_p": 0.07446276861569215,
+          "pairwise_id": 0.5095054254043462
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.021184973418712616,
-          "permutation_p": 0.04897551224387806,
-          "pairwise_id": 0.5139467670385804
+          "coarse8": 0.016248531639575958,
+          "permutation_p": 0.12443778110944528,
+          "pairwise_id": 0.5077295335394543
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.008613918907940388,
-          "permutation_p": 0.4337831084457771,
-          "pairwise_id": 0.4908227848101266
+          "coarse8": 0.019461985677480698,
+          "permutation_p": 0.18590704647676162,
+          "pairwise_id": 0.5075949367088607
         }
       },
       "ft_temporal": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.04128022864460945,
-          "permutation_p": 0.01699150424787606,
-          "pairwise_id": 0.5354040536983417
+          "coarse8": 0.0629214197397232,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5572080372027727
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.03885340690612793,
-          "permutation_p": 0.031984007996002,
-          "pairwise_id": 0.5376394676703858
+          "coarse8": 0.052609045058488846,
+          "permutation_p": 0.00849575212393803,
+          "pairwise_id": 0.5471837612582335
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.06254281103610992,
-          "permutation_p": 0.03648175912043978,
-          "pairwise_id": 0.5444620253164557
+          "coarse8": 0.09216637909412384,
+          "permutation_p": 0.0024987506246876563,
+          "pairwise_id": 0.5878164556962024
         }
       },
       "ft_full_seed0": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.05649980902671814,
-          "permutation_p": 0.0024987506246876563,
-          "pairwise_id": 0.5461232488081659
+          "coarse8": 0.06217801570892334,
+          "permutation_p": 0.0009995002498750624,
+          "pairwise_id": 0.5581147085490334
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.05522483214735985,
-          "permutation_p": 0.0069965017491254375,
-          "pairwise_id": 0.5460411345610968
+          "coarse8": 0.05551519989967346,
+          "permutation_p": 0.006496751624187906,
+          "pairwise_id": 0.5472509745933594
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.07680948823690414,
-          "permutation_p": 0.015492253873063468,
-          "pairwise_id": 0.5604430379746835
+          "coarse8": 0.08898632228374481,
+          "permutation_p": 0.005997001499250375,
+          "pairwise_id": 0.5808544303797468
         }
       },
       "ft_full_seed1": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.05524769797921181,
-          "permutation_p": 0.0029985007496251873,
-          "pairwise_id": 0.543754204322775
+          "coarse8": 0.06297953426837921,
+          "permutation_p": 0.0009995002498750624,
+          "pairwise_id": 0.5600304173612939
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.05262443795800209,
-          "permutation_p": 0.009495252373813094,
-          "pairwise_id": 0.5427140744723753
+          "coarse8": 0.05689883232116699,
+          "permutation_p": 0.005497251374312844,
+          "pairwise_id": 0.5495362279876327
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.0779966413974762,
-          "permutation_p": 0.014492753623188406,
-          "pairwise_id": 0.5585443037974683
+          "coarse8": 0.08889836817979813,
+          "permutation_p": 0.0074962518740629685,
+          "pairwise_id": 0.5841772151898734
         }
       },
       "ft_full_seed2": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.055197086185216904,
-          "permutation_p": 0.0034982508745627187,
-          "pairwise_id": 0.5439443128308619
+          "coarse8": 0.06631943583488464,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5612734345295546
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.05396309867501259,
-          "permutation_p": 0.0079960019990005,
-          "pairwise_id": 0.5431845678182552
+          "coarse8": 0.061790481209754944,
+          "permutation_p": 0.004997501249375313,
+          "pairwise_id": 0.5528632880763543
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.07830123603343964,
-          "permutation_p": 0.015992003998001,
-          "pairwise_id": 0.5588607594936709
+          "coarse8": 0.08861382305622101,
+          "permutation_p": 0.005997001499250375,
+          "pairwise_id": 0.5794303797468354
         }
       },
       "ft_full_seed3": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.05750999599695206,
-          "permutation_p": 0.001999000499750125,
-          "pairwise_id": 0.5456552894036443
+          "coarse8": 0.06294054538011551,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5592261121347724
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.055026423186063766,
-          "permutation_p": 0.0074962518740629685,
-          "pairwise_id": 0.5443608011829547
+          "coarse8": 0.05694577470421791,
+          "permutation_p": 0.005497251374312844,
+          "pairwise_id": 0.5498386879956985
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.08248510211706161,
-          "permutation_p": 0.012993503248375811,
-          "pairwise_id": 0.5632911392405063
+          "coarse8": 0.09001336991786957,
+          "permutation_p": 0.005997001499250375,
+          "pairwise_id": 0.5832278481012658
         }
       },
       "ft_full_seed4": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.056265197694301605,
-          "permutation_p": 0.0024987506246876563,
-          "pairwise_id": 0.5441197976075576
+          "coarse8": 0.06357143819332123,
+          "permutation_p": 0.0009995002498750624,
+          "pairwise_id": 0.560132783481033
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.053259655833244324,
-          "permutation_p": 0.008995502248875561,
-          "pairwise_id": 0.5426132544696868
+          "coarse8": 0.05521431565284729,
+          "permutation_p": 0.006496751624187906,
+          "pairwise_id": 0.5490657346417529
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.08045400679111481,
-          "permutation_p": 0.012993503248375811,
-          "pairwise_id": 0.5601265822784811
+          "coarse8": 0.09423333406448364,
+          "permutation_p": 0.004997501249375313,
+          "pairwise_id": 0.5860759493670886
         }
       },
       "ft_full_ensemble": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.0562172457575798,
-          "permutation_p": 0.0024987506246876563,
-          "pairwise_id": 0.5445877570120791
+          "coarse8": 0.06373712420463562,
+          "permutation_p": 0.0009995002498750624,
+          "pairwise_id": 0.5600742885554678
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.054022375494241714,
-          "permutation_p": 0.0074962518740629685,
-          "pairwise_id": 0.5434534211587579
+          "coarse8": 0.05729576200246811,
+          "permutation_p": 0.004997501249375313,
+          "pairwise_id": 0.5490993413093158
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.0793745294213295,
-          "permutation_p": 0.014492753623188406,
-          "pairwise_id": 0.5604430379746835
+          "coarse8": 0.09047387540340424,
+          "permutation_p": 0.005497251374312844,
+          "pairwise_id": 0.585126582278481
         }
       },
       "ft_full_rec": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.03634940832853317,
-          "permutation_p": 0.038980509745127435,
-          "pairwise_id": 0.532903395630429
+          "coarse8": 0.05865998938679695,
+          "permutation_p": 0.0014992503748125937,
+          "pairwise_id": 0.5503202597174696
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.04154358431696892,
-          "permutation_p": 0.041979010494752625,
-          "pairwise_id": 0.5395214410539051
+          "coarse8": 0.057809483259916306,
+          "permutation_p": 0.009995002498750625,
+          "pairwise_id": 0.5532329614195457
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.04010013863444328,
-          "permutation_p": 0.1629185407296352,
-          "pairwise_id": 0.525
+          "coarse8": 0.07421477884054184,
+          "permutation_p": 0.018490754622688656,
+          "pairwise_id": 0.5648734177215189
         }
       }
     },
@@ -302,281 +303,281 @@
       "ridge_own": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.04934533312916756,
-          "permutation_p": 0.0014992503748125937,
-          "pairwise_id": 0.5633938755812933
+          "coarse8": 0.05111977085471153,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5547366265976427
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.052250515669584274,
-          "permutation_p": 0.001999000499750125,
-          "pairwise_id": 0.5668772684500606
+          "coarse8": 0.059223730117082596,
+          "permutation_p": 0.0009995002498750624,
+          "pairwise_id": 0.5651297217367925
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.057002484798431396,
-          "permutation_p": 0.020989505247376312,
-          "pairwise_id": 0.5675632911392405
+          "coarse8": 0.04786352068185806,
+          "permutation_p": 0.05247376311844078,
+          "pairwise_id": 0.5460443037974683
         }
       },
       "things_prior": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.060523152351379395,
+          "coarse8": 0.06741344928741455,
           "permutation_p": 0.0004997501249375312,
-          "pairwise_id": 0.5675762627592057
+          "pairwise_id": 0.577037816969378
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.07003632932901382,
+          "coarse8": 0.07338804006576538,
           "permutation_p": 0.0004997501249375312,
-          "pairwise_id": 0.5755477886812744
+          "pairwise_id": 0.5857642156203792
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.05324171110987663,
-          "permutation_p": 0.026986506746626688,
-          "pairwise_id": 0.5582278481012659
+          "coarse8": 0.06854437291622162,
+          "permutation_p": 0.004997501249375313,
+          "pairwise_id": 0.5786392405063292
         }
       },
       "net_zeroshot": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.02771884948015213,
-          "permutation_p": 0.005997001499250375,
-          "pairwise_id": 0.5227837735076483
+          "coarse8": 0.029391318559646606,
+          "permutation_p": 0.001999000499750125,
+          "pairwise_id": 0.5219940920125179
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.03786200284957886,
-          "permutation_p": 0.004997501249375313,
-          "pairwise_id": 0.530884527490254
+          "coarse8": 0.03842766210436821,
+          "permutation_p": 0.0034982508745627187,
+          "pairwise_id": 0.5273894340637183
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.011211469769477844,
-          "permutation_p": 0.3353323338330835,
-          "pairwise_id": 0.5080696202531646
+          "coarse8": 0.015131602995097637,
+          "permutation_p": 0.2368815592203898,
+          "pairwise_id": 0.5085443037974684
         }
       },
       "probe_hidden": {
         "all": {
           "n_examples": 262,
-          "coarse8": -0.01650647073984146,
-          "permutation_p": 0.8610694652673663,
-          "pairwise_id": 0.49360942938200114
+          "coarse8": -0.011613585986196995,
+          "permutation_p": 0.7411294352823589,
+          "pairwise_id": 0.48977801175748004
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": -0.03111611306667328,
-          "permutation_p": 0.9495252373813093,
-          "pairwise_id": 0.4730810592821616
+          "coarse8": -0.02408558502793312,
+          "permutation_p": 0.912543728135932,
+          "pairwise_id": 0.47015727920419415
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.025171075016260147,
-          "permutation_p": 0.2013993003498251,
-          "pairwise_id": 0.5287974683544304
+          "coarse8": 0.02657504752278328,
+          "permutation_p": 0.18690654672663667,
+          "pairwise_id": 0.5221518987341772
         }
       },
       "probe_temporal": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.06654582172632217,
+          "coarse8": 0.08566369861364365,
           "permutation_p": 0.0004997501249375312,
-          "pairwise_id": 0.5779298645842473
+          "pairwise_id": 0.5980521189786785
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.07199830561876297,
+          "coarse8": 0.08497796207666397,
           "permutation_p": 0.0004997501249375312,
-          "pairwise_id": 0.5880830756822154
+          "pairwise_id": 0.5991060626428283
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.06805562973022461,
-          "permutation_p": 0.009995002498750625,
-          "pairwise_id": 0.5754746835443039
+          "coarse8": 0.10120005905628204,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.6166139240506329
         }
       },
       "ft_adapter": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.029956026002764702,
-          "permutation_p": 0.001999000499750125,
-          "pairwise_id": 0.5217747360416484
+          "coarse8": 0.04424094408750534,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5328741481676464
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.03002363257110119,
-          "permutation_p": 0.018490754622688656,
-          "pairwise_id": 0.5205672805484607
+          "coarse8": 0.041113365441560745,
+          "permutation_p": 0.001999000499750125,
+          "pairwise_id": 0.5270533673880897
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.025189926847815514,
-          "permutation_p": 0.12243878060969515,
-          "pairwise_id": 0.5050632911392405
+          "coarse8": 0.044457919895648956,
+          "permutation_p": 0.009495252373813094,
+          "pairwise_id": 0.533860759493671
         }
       },
       "ft_temporal": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.04749636724591255,
-          "permutation_p": 0.0074962518740629685,
-          "pairwise_id": 0.5399374104296453
+          "coarse8": 0.06625378876924515,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5549706062999035
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.061251476407051086,
-          "permutation_p": 0.005497251374312844,
-          "pairwise_id": 0.5554846081462562
+          "coarse8": 0.07543668150901794,
+          "permutation_p": 0.0014992503748125937,
+          "pairwise_id": 0.5657346417529238
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.0265949759632349,
-          "permutation_p": 0.272863568215892,
-          "pairwise_id": 0.5143987341772153
+          "coarse8": 0.05575195699930191,
+          "permutation_p": 0.06346826586706647,
+          "pairwise_id": 0.539873417721519
         }
       },
       "ft_full_seed0": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.07737994194030762,
+          "coarse8": 0.08345950394868851,
           "permutation_p": 0.0004997501249375312,
-          "pairwise_id": 0.5644614079728584
+          "pairwise_id": 0.5730601620309438
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.09190975874662399,
-          "permutation_p": 0.0009995002498750624,
-          "pairwise_id": 0.5817986288479634
+          "coarse8": 0.09906461089849472,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5885535690280952
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.054784975945949554,
-          "permutation_p": 0.07396301849075462,
-          "pairwise_id": 0.5346518987341773
+          "coarse8": 0.059042297303676605,
+          "permutation_p": 0.0769615192403798,
+          "pairwise_id": 0.5457278481012657
         }
       },
       "ft_full_seed1": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.08439306169748306,
+          "coarse8": 0.08549899607896805,
           "permutation_p": 0.0004997501249375312,
-          "pairwise_id": 0.5724459653125091
+          "pairwise_id": 0.574917375917639
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.09495223313570023,
+          "coarse8": 0.09965142607688904,
           "permutation_p": 0.0004997501249375312,
-          "pairwise_id": 0.5859658556257562
+          "pairwise_id": 0.5887888157010351
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.06927427649497986,
-          "permutation_p": 0.030484757621189407,
-          "pairwise_id": 0.5563291139240507
+          "coarse8": 0.0619039312005043,
+          "permutation_p": 0.05897051474262868,
+          "pairwise_id": 0.5484177215189874
         }
       },
       "ft_full_seed2": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.0794074684381485,
+          "coarse8": 0.08735104650259018,
           "permutation_p": 0.0004997501249375312,
-          "pairwise_id": 0.5680588458951186
+          "pairwise_id": 0.5773741627913778
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.09043455868959427,
-          "permutation_p": 0.0009995002498750624,
-          "pairwise_id": 0.581899448850652
+          "coarse8": 0.09843698143959045,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5893601290496034
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.061819206923246384,
-          "permutation_p": 0.05147426286856572,
-          "pairwise_id": 0.5441455696202532
+          "coarse8": 0.07385126501321793,
+          "permutation_p": 0.02848575712143928,
+          "pairwise_id": 0.5629746835443038
         }
       },
       "ft_full_seed3": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.07584988325834274,
+          "coarse8": 0.08344758301973343,
           "permutation_p": 0.0004997501249375312,
-          "pairwise_id": 0.5622824719955544
+          "pairwise_id": 0.5742008130794652
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.08523162454366684,
-          "permutation_p": 0.0009995002498750624,
-          "pairwise_id": 0.5748756553300175
+          "coarse8": 0.09678247570991516,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5872429089931442
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.05918775126338005,
-          "permutation_p": 0.05547226386806597,
-          "pairwise_id": 0.5412974683544304
+          "coarse8": 0.06423860788345337,
+          "permutation_p": 0.05747126436781609,
+          "pairwise_id": 0.549367088607595
         }
       },
       "ft_full_seed4": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.07788360863924026,
+          "coarse8": 0.08713264018297195,
           "permutation_p": 0.0004997501249375312,
-          "pairwise_id": 0.567298411862771
+          "pairwise_id": 0.5778421221958995
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.08903629332780838,
-          "permutation_p": 0.0009995002498750624,
-          "pairwise_id": 0.5821346955235919
+          "coarse8": 0.09834703803062439,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5901666890711117
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.05830411985516548,
-          "permutation_p": 0.059470264867566215,
-          "pairwise_id": 0.5346518987341773
+          "coarse8": 0.06984993070363998,
+          "permutation_p": 0.03548225887056472,
+          "pairwise_id": 0.5558544303797468
         }
       },
       "ft_full_ensemble": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.07948443293571472,
+          "coarse8": 0.08587368577718735,
           "permutation_p": 0.0004997501249375312,
-          "pairwise_id": 0.5676786288789447
+          "pairwise_id": 0.5759995320405954
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.0908002033829689,
-          "permutation_p": 0.0009995002498750624,
-          "pairwise_id": 0.5820002688533404
+          "coarse8": 0.09911882132291794,
+          "permutation_p": 0.0004997501249375312,
+          "pairwise_id": 0.5884191423578438
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.06109017878770828,
-          "permutation_p": 0.05247376311844078,
-          "pairwise_id": 0.5408227848101266
+          "coarse8": 0.06587348878383636,
+          "permutation_p": 0.047976011994003,
+          "pairwise_id": 0.5528481012658227
         }
       },
       "ft_full_rec": {
         "all": {
           "n_examples": 262,
-          "coarse8": 0.049144767224788666,
-          "permutation_p": 0.0079960019990005,
-          "pairwise_id": 0.5390307390833845
+          "coarse8": 0.06512846052646637,
+          "permutation_p": 0.0009995002498750624,
+          "pairwise_id": 0.5551460910765991
         },
         "pretraining_images": {
           "n_examples": 173,
-          "coarse8": 0.06903711706399918,
-          "permutation_p": 0.001999000499750125,
-          "pairwise_id": 0.562004301653448
+          "coarse8": 0.0735861212015152,
+          "permutation_p": 0.0014992503748125937,
+          "pairwise_id": 0.5624075816642021
         },
         "never_seen": {
           "n_examples": 80,
-          "coarse8": 0.028590228408575058,
-          "permutation_p": 0.2673663168415792,
-          "pairwise_id": 0.5183544303797468
+          "coarse8": 0.06040734052658081,
+          "permutation_p": 0.050974512743628186,
+          "pairwise_id": 0.5537974683544303
         }
       }
     }
@@ -585,47 +586,47 @@
     "none": {
       "ridge_own": {
         "all": {
-          "mean_diff": 0.015350738540291786,
+          "mean_diff": 0.01550586149096489,
           "ci95": [
-            -0.03142590476199984,
-            0.06023292457684871
+            -0.028600792540237306,
+            0.060219511389732354
           ]
         },
         "pretraining_images": {
-          "mean_diff": 0.011370225809514523,
+          "mean_diff": 0.0032116305083036423,
           "ci95": [
-            -0.04345687357708812,
-            0.06639452073723073
+            -0.05316152609884739,
+            0.05991305420175184
           ]
         },
         "never_seen": {
-          "mean_diff": 0.030904989689588547,
+          "mean_diff": 0.04512042924761772,
           "ci95": [
-            -0.04904001895338297,
-            0.11202874481678007
+            -0.02847834974527359,
+            0.11777954902499914
           ]
         }
       },
       "things_prior": {
         "all": {
-          "mean_diff": 0.016705388203263283,
+          "mean_diff": 0.02216283418238163,
           "ci95": [
-            -0.026870994502678512,
-            0.05885177059099077
+            -0.020015104860067367,
+            0.06454538572579621
           ]
         },
         "pretraining_images": {
-          "mean_diff": 0.00845643412321806,
+          "mean_diff": 0.015389525331556797,
           "ci95": [
-            -0.04498405866324902,
-            0.060858648270368555
+            -0.040226925536990164,
+            0.06956989504396913
           ]
         },
         "never_seen": {
-          "mean_diff": 0.05186634138226509,
+          "mean_diff": 0.04900983348488808,
           "ci95": [
-            -0.01730532138608396,
-            0.11900051813572644
+            -0.018320086086168884,
+            0.1126671278849244
           ]
         }
       }
@@ -633,47 +634,47 @@
     "0.1-30 Hz": {
       "ridge_own": {
         "all": {
-          "mean_diff": 0.030139101669192314,
+          "mean_diff": 0.03475392237305641,
           "ci95": [
-            -0.01636377773247659,
-            0.07495362553745508
+            -0.010627120709978044,
+            0.08075241949409247
           ]
         },
         "pretraining_images": {
-          "mean_diff": 0.038549695163965225,
+          "mean_diff": 0.03989509120583534,
           "ci95": [
-            -0.016762148588895798,
-            0.09301851224154231
+            -0.014387061749584972,
+            0.09435255546122788
           ]
         },
         "never_seen": {
-          "mean_diff": 0.004087701439857483,
+          "mean_diff": 0.018009964376688004,
           "ci95": [
-            -0.07369853761047125,
-            0.08078642915934318
+            -0.06067088944837451,
+            0.09429066404700279
           ]
         }
       },
       "things_prior": {
         "all": {
-          "mean_diff": 0.018961280584335327,
+          "mean_diff": 0.018460247665643692,
           "ci95": [
-            -0.023793923528864978,
-            0.061027170624583925
+            -0.0240959458053112,
+            0.060235088784247624
           ]
         },
         "pretraining_images": {
-          "mean_diff": 0.020763879641890526,
+          "mean_diff": 0.025730783119797707,
           "ci95": [
-            -0.03169494708999991,
-            0.07173996735364198
+            -0.024692257540300487,
+            0.07486543301492928
           ]
         },
         "never_seen": {
-          "mean_diff": 0.007848466746509075,
+          "mean_diff": -0.0026708929799497128,
           "ci95": [
-            -0.06398093868046999,
-            0.08119458649307489
+            -0.0804337665438652,
+            0.07395688556134701
           ]
         }
       }
