@@ -29,6 +29,7 @@ from matplotlib.patches import FancyBboxPatch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from starstim_recon.data_sessions import _folder, clock_error, rsvp_display_lag_ms, rsvp_usable, session_ids  # noqa: E402
 from starstim_recon.images import enhanced, photo, pixel32_many, to8  # noqa: E402
+from starstim_recon.metrics import paired_bootstrap  # noqa: E402
 from starstim_recon.paths import CACHE, RESULTS, THINGS_OBJECT_IMAGES  # noqa: E402
 
 INK, INK2, MUTED, GRID, AXIS, SURFACE = "#0b0b0b", "#52514e", "#898781", "#e1e0d9", "#c3c2b7", "#fcfcfb"
@@ -40,6 +41,8 @@ POOLED = {"own_decoder": ("Own decoder", OWN, "within_person"), "things_zeroshot
           "things_prior": ("THINGS as prior", PRIOR, "things_prior")}   # readout of run_rsvp_pooled -> label, colour, per-recording key
 READOUT = {"within_person": ("Own decoder (trained on the same recording)", OWN),
            "things_zeroshot": ("THINGS decoder (trained on THINGS-EEG2 only)", THINGS)}
+BARS = {"within_person": ("Own decoder (trained on this recording)", OWN), "things_zeroshot": ("THINGS decoder (THINGS-EEG2 only)", THINGS),
+        "things_prior": ("THINGS as prior (this recording, starting from THINGS)", PRIOR)}   # the per-recording chart
 
 
 def wrap(text, width):
@@ -101,6 +104,9 @@ def main():
     assert (RESULTS / "rsvp_learning_curves.json").exists(), "run scripts/run_rsvp_learning_curves.py first"
     curves = json.loads((RESULTS / "rsvp_learning_curves.json").read_text())
     assert curves["sessions"] == usable, f"results/rsvp_learning_curves.json covers {curves['sessions']}, usable are {usable}: rerun it"
+    f = RESULTS / "rsvp_pooled_bp0.1-30_predictions.npz"
+    assert f.exists(), "run scripts/run_rsvp_pooled.py first"
+    P = np.load(f); prior_vs_things = paired_bootstrap(P["coarse8_things_prior"], P["coarse8_things_zeroshot"])
     best_net = net("0.1-30 Hz"); n_pre, n_new = tuned["image_subsets"]["pretraining_images"], tuned["image_subsets"]["never_seen"]
     mean = {r: float(np.mean([score(S[i], r)[0] for i in usable])) for r in READOUT}
     n_sig = {r: sum(score(S[i], r)[1] < 0.05 for i in usable) for r in READOUT}
@@ -111,13 +117,14 @@ def main():
     drifting = [i for i, d in drift.items() if d is not None and d[1].any()]
     steady = [i for i, d in drift.items() if d is not None and not d[1].any()]
     numbers = {"sessions": {i: {"usable": S[i]["usable"], "images_x_repeats": [S[i]["j"]["n_images"], S[i]["j"]["repeats"][1]],
-                                **{r: dict(zip(("coarse8", "p"), score(S[i], r))) for r in READOUT},
+                                **{r: dict(zip(("coarse8", "p"), score(S[i], r))) for r in BARS},
                                 **{f"{r}_at_marker": score(S[i], r, "marker")[0] for r in READOUT}} for i in ids},
                "mean_usable": mean, "n_significant_usable": n_sig, "usable": usable, "drifting": drifting, "reference": ref}
     numbers["pooled"] = {f: {c: {r: pool(f, c, r)["coarse8"] for r in POOLED} for c in v} for f, v in pooled["results"].items()}
     numbers["pooled_finetuned_network"] = {f: {subset: {r: net(f, subset, r) for r in ("ft_full_ensemble", "ridge_own", "things_prior")}
                                                for subset in tuned["image_subsets"]} for f in tuned["results"]}
     numbers["learning_curves"] = curves["results"]
+    numbers["pooled_prior_minus_things_decoder"] = prior_vs_things          # 0.1-30 Hz, 31 channels, paired bootstrap over images
     numbers["pooled_finetuned_network"].update(image_subsets=tuned["image_subsets"], seeds=tuned["seeds"],
                                                minus_things_prior=tuned["ft_full_ensemble_vs"]["0.1-30 Hz"]["things_prior"])
     print(json.dumps(numbers["mean_usable"]), "usable", usable, "drifting", drifting)
@@ -149,14 +156,14 @@ def main():
 
     # ---------------------------------------------------------------------------------------------- scores per recording
     ax = panel(fig, R([0.07, 0.655, 0.55, 0.165]), "Reconstruction score per recording, corrected timing",
-               "Two ways to decode the same recording. * = above chance (permutation test, p < .05).")
-    w = 0.2; top = max(max(score(S[i], r)[0] for i in ids for r in READOUT), ref["old"]["coarse8"]) + 0.03
-    for k, (r, (label, col)) in enumerate(READOUT.items()):
+               "Three ways to decode the same recording. * = above chance (permutation test, p < .05).")
+    w = 0.25; top = max(max(score(S[i], r)[0] for i in ids for r in BARS), ref["old"]["coarse8"]) + 0.06
+    for k, (r, (label, col)) in enumerate(BARS.items()):
         for j, i in enumerate(ids):
-            v, p = score(S[i], r); x = j + (k - 0.5) * 0.42
+            v, p = score(S[i], r); x = j + (k - 1) * 0.28
             ax.bar(x, v, w, color=col if S[i]["usable"] else GRID, label=label if j == 0 else None, zorder=3)
-            ax.text(x, v + (0.004 if v >= 0 else -0.004), f"{v:+.3f}" + ("*" if p < 0.05 and S[i]["usable"] else ""), ha="center",
-                    va="bottom" if v >= 0 else "top", fontsize=9, color=INK if S[i]["usable"] else MUTED)
+            ax.text(x, v + (0.003 if v >= 0 else -0.003), f"{v:+.3f}" + ("*" if p < 0.05 and S[i]["usable"] else ""), ha="center",
+                    va="bottom" if v >= 0 else "top", rotation=90, fontsize=8.5, color=INK if S[i]["usable"] else MUTED)
     ax.axhline(0, color=AXIS, lw=1, zorder=2)
     ax.axhline(ref["old"]["coarse8"], color=MUTED, lw=1, zorder=1)
     ax.text(len(ids) - 0.45, ref["old"]["coarse8"] + 0.003, f"old lab data, 6 people pooled: {ref['old']['coarse8']:+.3f}", ha="right",
@@ -164,9 +171,10 @@ def main():
     ax.set_xticks(range(len(ids)))
     ax.set_xticklabels([f"{i}\n{S[i]['j']['n_images']} x {S[i]['j']['repeats'][1]}" if S[i]["usable"] else f"{i}\nnot usable"
                         for i in ids], fontsize=10, color=INK2)
-    ax.set_ylim(min(-0.03, min(score(S[i], r)[0] for i in ids for r in READOUT) - 0.02), top); ax.set_xlim(-0.6, len(ids) - 0.4)
+    ax.set_ylim(min(-0.03, min(score(S[i], r)[0] for i in ids for r in BARS) - 0.035), top); ax.set_xlim(-0.6, len(ids) - 0.4)
     ax.yaxis.grid(True, color=GRID, lw=1); ax.set_ylabel("coarse8", fontsize=10.5, color=INK2)
-    ax.legend(loc="upper left", fontsize=10, frameon=False, ncol=2, bbox_to_anchor=(0, 0.995), handlelength=1.2, labelcolor=INK2)
+    ax.legend(loc="upper left", fontsize=10, frameon=False, ncol=2, bbox_to_anchor=(0, 0.995), handlelength=1.2, labelcolor=INK2,
+              columnspacing=1.2)
     ax.text(0, -0.23, "Below each recording: images x repeats kept. " + ("Grey: timing could not be verified (" + ", ".join(unusable)
             + ")." if unusable else ""), transform=ax.transAxes, fontsize=9.5, color=MUTED)
 
@@ -231,6 +239,8 @@ def main():
         ax = panel(fig, [0.21 + k * 0.33, (BAND + 1.8) / NEW_H, 0.27, 1.9 / NEW_H],
                    "What more data would buy: the same decoders trained on less" if k == 0 else " ", sub)
         x = [x_all if q == "all" else float(q) for q in curves[axis]]
+        alone = pool("0.1-30 Hz", "31 channels", "things_zeroshot")["coarse8"]
+        ax.plot([x[0], x[-1]], [alone, alone], "-", color=THINGS, lw=1.6, zorder=2, label=f"THINGS decoder alone, no lab data ({alone:+.3f})")
         for r in ("own_decoder", "things_prior"):
             label, col, _ = POOLED[r]
             y = [lc[r]["grid"][q]["all"]["coarse8"] if k == 0 else lc[r]["grid"]["all"][q]["coarse8"] for q in curves[axis]]
@@ -245,10 +255,17 @@ def main():
         if k == 0:
             ax.set_ylabel("coarse8", fontsize=10.5, color=INK2)
             ax.plot([], [], "--", color=INK2, lw=1.3, label="the same decoder with the EEG shuffled against the images")
-            ax.legend(loc="upper left", bbox_to_anchor=(-0.02, -0.27), fontsize=9.5, frameon=False, ncol=3, handletextpad=0.5,
-                      columnspacing=1.4, labelcolor=INK2)
-            ax.text(0, -0.47, wrap(
-                f"0.1-30 Hz band-pass, 31 channels. The training images are thinned at random (mean of {curves['draws']} draws); the test images "
+            h, l = ax.get_legend_handles_labels(); order = [1, 2, 0, 3]          # the decoders left, the two references right
+            ax.legend([h[q] for q in order], [l[q] for q in order], loc="upper left", bbox_to_anchor=(-0.02, -0.27), fontsize=9.5,
+                      frameon=False, ncol=2, handletextpad=0.5, columnspacing=1.4, labelcolor=INK2)
+            prior_curve = [lc["things_prior"]["grid"][q]["all"]["coarse8"] for q in curves["images"]]
+            passes = next((q for q, v in zip(curves["images"], prior_curve) if v > alone), None)
+            ax.text(0, -0.58, wrap(
+                (f"THINGS as prior is below the THINGS decoder alone with few training images and passes it from {passes} images on; "
+                 if passes else "THINGS as prior stays below the THINGS decoder alone at every number of training images; ")
+                + f"with all images it leads by {prior_vs_things['mean_diff']:+.3f} (95% interval {prior_vs_things['ci95'][0]:+.3f} to "
+                f"{prior_vs_things['ci95'][1]:+.3f}), not yet reliably. "
+                + f"0.1-30 Hz band-pass, 31 channels. The training images are thinned at random (mean of {curves['draws']} draws); the test images "
                 f"stay at their full average. Both decoders still gain: from 100 to all images {diff('own_decoder', 'images_all_minus_100'):+.3f} "
                 f"(own decoder) and {diff('things_prior', 'images_all_minus_100'):+.3f} (THINGS as prior), from 1 to all recordings "
                 f"{diff('own_decoder', 'recordings_all_minus_1'):+.3f} and {diff('things_prior', 'recordings_all_minus_1'):+.3f}. Scoring a test "
